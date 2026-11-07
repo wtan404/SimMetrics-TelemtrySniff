@@ -1,108 +1,140 @@
 # SimMetrics-TelemtrySniff
 
-A unified **SimHub C# plugin** designed to sniff, capture, and catalog telemetry streams across multiple racing simulators—including **Automobilista 2 (AMS2)**, **iRacing**, **Assetto Corsa / ACC**, and **BeamNG.drive**.
+A multi-mode telemetry capture, packet sniffing, and cataloging suite designed for virtual motorsports simulators—featuring a standalone **Assetto Corsa UDP Broadcast Listener & Protocol Sniffer** (`SimMetrics.TelemetrySniff.Cli`) alongside a unified **SimHub C# plugin** (`SimMetrics.TelemetrySniff.dll`).
 
-The operational intent of this tool is to act as an automated telemetry reverse-engineering recorder and schema generator for downstream data analytics, ML modeling, and dashboard development.
+The operational intent of this tool is to act as an automated telemetry reverse-engineering recorder and schema generator for downstream data analytics, ML modeling, and dashboard development across **Assetto Corsa**, **Automobilista 2 (AMS2)**, **iRacing**, and **BeamNG.drive**.
 
 ---
 
-## 🏎️ Telemetry Architecture: One Size Fits All vs. Variations
-
-When building telemetry applications across simulators, you face two levels of integration:
+## 🏎️ Telemetry Architecture: Dual-Mode Operation
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                       SimHub Core                           │
-│  (Aggregates game processes, shared memory, and UDP ports)  │
+│              SimMetrics.TelemetrySniff.Core                 │
+│   • Universal TelemetryPacket & NormalizedData Channels     │
+│   • Assetto Corsa Binary Datagram Parser (RT_CAR_INFO, Lap) │
+│   • Non-blocking JSONL Streamer & Schema Catalog Generator  │
 └──────────────────────────────┬──────────────────────────────┘
                                │
             ┌──────────────────┴──────────────────┐
             ▼                                     ▼
 ┌───────────────────────────────┐   ┌───────────────────────────────┐
-│     Tier 1: Normalized        │   │    Tier 2: Game-Specific      │
-│     (One-Size-Fits-All)       │   │    (Variations & Raw)         │
+│ SimMetrics.TelemetrySniff.Cli │   │ SimMetrics.TelemetrySniff.Dll │
+│ (.NET 8 Standalone App)       │   │ (SimHub Plugin)               │
 ├───────────────────────────────┤   ├───────────────────────────────┤
-│ • Speed, RPM, Gear            │   │ • iRacing: VarHeader Dict     │
-│ • Throttle, Brake, Clutch     │   │ • AMS2: $pcars2$ SharedMem    │
-│ • Orientation & G-Forces      │   │ • AC: acpmf_physics / static  │
-│ • Standard Lap Timing         │   │ • BeamNG: OutGauge / OutSim   │
+│ • Interactive Terminal HUD    │   │ • SimHub In-App Capture       │
+│ • Active AC UDP Handshake     │   │ • 50+ SimHub Supported Titles │
+│ • Passive UDP Port Sniffing   │   │ • Dynamic Property Reflection │
+│ • Zero External Dependencies  │   │ • WPF Configuration Card      │
 └───────────────────────────────┘   └───────────────────────────────┘
-            │                                     │
-            └──────────────────┬──────────────────┘
-                               ▼
-        ┌──────────────────────────────────────────────┐
-        │       SimMetrics.TelemetrySniff.dll          │
-        │   • Dynamic Property Reflection              │
-        │   • Non-blocking Thread-safe Disk Queue      │
-        │   • Session .jsonl & .catalog.json Generator │
-        └──────────────────────────────────────────────┘
 ```
 
-1. **SimHub Integration (Single DLL)**: You only need **one single `.dll`**. SimHub hosts the plugin for all games without requiring per-game executables.
-2. **Telemetry Payload (Two-Tier Model)**:
-   - **Tier 1 (Universal)**: Standardized `GameData.NewData` fields provide a consistent baseline across 50+ simulators.
-   - **Tier 2 (Game Variations)**: Each sim exposes game-exclusive channels (e.g. iRacing hybrid deployment modes and incident points; AMS2 turbo boost and brake rotor temps; AC tire temperature curves; BeamNG chassis node stress).
-
-`SimMetrics-TelemtrySniff` bridges this gap through **Automated Schema Discovery**: instead of manually hand-coding field maps, the sniffer dynamically inspects SimHub's runtime property catalog and serializes both the normalized baseline and raw game payloads.
+1. **Standalone CLI Mode (`SimMetrics.TelemetrySniff.Cli`)**:
+   - Zero dependency on SimHub or external host software.
+   - Actively connects to Assetto Corsa via UDP port `9996` with full handshake negotiation.
+   - Passively sniffs incoming broadcast UDP packets across any specified port.
+   - Provides an interactive ANSI terminal HUD with real-time tachometer, speedometer, input meters, and tyre telemetry.
+2. **SimHub Plugin Mode (`SimMetrics.TelemetrySniff.dll`)**:
+   - Hosted directly inside SimHub for integrated in-rig capture.
+   - Dynamic reflection on SimHub's runtime property catalog for automated schema dumps.
 
 ---
 
 ## 📦 Output Formats
 
-Each capture session produces two artifacts in your documents folder (`Documents/SimMetrics/TelemetrySniff`):
+Each capture session produces two artifacts in your documents folder (`Documents/SimMetrics/TelemetrySniff`) or custom output directory:
 
-1. **`sniff_<GameName>_<Timestamp>.jsonl`**: A stream of newline-delimited JSON frames captured at your selected sampling rate (1–60 Hz).
-2. **`sniff_<GameName>_<Timestamp>.catalog.json`**: An ordered dictionary of every single telemetry property exposed by SimHub for that specific car, track, and simulator, with current data types and sample values.
+1. **`sniff_<GameName>_<Timestamp>.jsonl`**: A continuous stream of newline-delimited JSON frames captured at high frequency (1–60+ Hz).
+2. **`sniff_<GameName>_<Timestamp>.catalog.json`**: An ordered dictionary of every telemetry channel discovered during the capture session, complete with data types and sample values.
 
 ---
 
-## 🛠️ Building & Installing
+## 🏁 Assetto Corsa UDP Setup & Quickstart
+
+Assetto Corsa features a dedicated remote telemetry protocol that broadcasts high-resolution physics and lap timings over UDP.
+
+### 1. In-Game Configuration
+By default, Assetto Corsa enables remote telemetry on UDP port `9996`.
+To verify or customize your configuration:
+1. Navigate to your Assetto Corsa installation directory: `steamapps\common\assettocorsa\system\cfg\assetto_corsa.ini`.
+2. Confirm the `[REMOTE_TELEMETRY]` section:
+   ```ini
+   [REMOTE_TELEMETRY]
+   PORT=9996
+   ```
+
+### 2. Running the Standalone Sniffer
+
+From the repository root:
+
+#### Mode A: Active UDP Handshake (Default)
+Connects directly to Assetto Corsa, completes the binary handshake, and streams real-time vehicle telemetry:
+```bash
+dotnet run --project src/SimMetrics.TelemetrySniff.Cli -- --ip 127.0.0.1 --port 9996
+```
+
+#### Mode B: Passive Broadcast Sniffing
+Listens on a local UDP port for broadcast or forwarded packets without issuing handshake datagrams:
+```bash
+dotnet run --project src/SimMetrics.TelemetrySniff.Cli -- --mode passive --port 9996
+```
+
+#### Mode C: Simulated Demo Mode
+Previews the real-time ANSI terminal HUD and verifies disk recording without launching the game:
+```bash
+dotnet run --project src/SimMetrics.TelemetrySniff.Cli -- --mode demo
+```
+
+### CLI Command Options
+```
+Options:
+  --mode <active|passive|demo>  Operation mode (Default: active)
+  --ip <ip_address>             Target simulator host IP (Default: 127.0.0.1)
+  --port <port_number>          UDP telemetry port (Default: 9996)
+  --out <directory_path>        Custom directory for output .jsonl and .catalog.json files
+  --no-record                   Disable saving capture frames to disk
+  --help, -h                    Show help screen
+```
+
+### Hotkeys in Terminal HUD
+- `[Q]` or `[Esc]`: Gracefully stops the capture, flushes pending queues, and exports the `.catalog.json` schema.
+- `[H]`: Triggers a manual handshake packet to Assetto Corsa.
+
+---
+
+## 🛠️ Building the Entire Solution
 
 ### Prerequisites
 - Windows 10/11
-- [.NET Framework 4.8 Developer Pack](https://dotnet.microsoft.com/en-us/download/dotnet-framework/net48) (or modern .NET SDK)
-- [SimHub](https://www.simhubdash.com/) installed (default: `C:\Program Files (x86)\SimHub`)
+- [.NET 8 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) or higher
+- Optional: SimHub (for plugin build against local SimHub installation)
 
-### Build Steps
+### Build Commands
 1. Clone the repository:
    ```bash
    git clone https://github.com/wtan404/SimMetrics-TelemtrySniff.git
    cd SimMetrics-TelemtrySniff
    ```
-2. Build the Release configuration:
+2. Build the solution:
    ```bash
-   dotnet build src/SimMetrics.TelemetrySniff.csproj -c Release
+   dotnet build SimMetrics-TelemtrySniff.sln -c Release
    ```
-   *(On Windows, the post-build event will automatically attempt to copy `SimMetrics.TelemetrySniff.dll` directly to your SimHub folder if detected).*
-
-3. Manual Installation (if preferred):
-   - Copy `bin/Release/SimMetrics.TelemetrySniff.dll` into `C:\Program Files (x86)\SimHub\`.
-
-4. Enable in SimHub:
-   - Launch SimHub.
-   - Navigate to **Settings** > **Plugins**.
-   - Enable **SimMetrics Telemetry Sniff**.
-   - Open the new **Telemetry Sniff** tab in SimHub's left menu.
+3. Run tests:
+   ```bash
+   dotnet test SimMetrics-TelemtrySniff.sln
+   ```
 
 ---
 
-## 🎮 Game Setup Notes
+## 🎮 Simulator Protocol Compatibility Matrix
 
-| Simulator | Telemetry Protocol | SimHub Requirement |
-|---|---|---|
-| **iRacing** | Windows Memory-Mapped File (`Local\IRSDKMemMapFileName`) | Starts automatically when session loads. SimHub auto-detects. |
-| **Automobilista 2 (AMS2)** | Project CARS 2 Shared Memory (`$pcars2$`) | In AMS2: *Options > System > Shared Memory > Project CARS 2*. |
-| **Assetto Corsa / ACC** | Kunos Shared Memory (`acpmf_physics`, `acpmf_static`) | Enabled by default in AC / ACC. SimHub connects directly. |
-| **BeamNG.drive** | UDP OutGauge / OutSim | In BeamNG: *Options > Other > OutGauge Support*, set IP `127.0.0.1` and Port `4444`. |
-
----
-
-## 🧭 Steering Wheel / Button Box Bindings
-
-The plugin registers native SimHub actions that you can bind to wheel buttons or keyboard shortcuts:
-- `SimMetrics.TelemetrySniff.ToggleCapture`
-- `SimMetrics.TelemetrySniff.StartCapture`
-- `SimMetrics.TelemetrySniff.StopCapture`
+| Simulator | Protocol | Supported In CLI | Supported In SimHub Plugin |
+|---|---|:---:|:---:|
+| **Assetto Corsa** | UDP Remote Telemetry (Port `9996`) | ✅ Native Active + Passive | ✅ via Shared Memory |
+| **Assetto Corsa Competizione (ACC)** | UDP Broadcast Protocol (Port `9231`) | ✅ Passive Sniffer | ✅ via Shared Memory |
+| **Automobilista 2 (AMS2)** | Project CARS 2 Shared Memory (`$pcars2$`) | — | ✅ Full Capture |
+| **iRacing** | Windows Memory-Mapped File (`Local\IRSDKMemMapFileName`) | — | ✅ Full Capture |
+| **BeamNG.drive** | UDP OutGauge / OutSim (Port `4444`) | ✅ Passive Sniffer | ✅ OutGauge Parser |
 
 ---
 

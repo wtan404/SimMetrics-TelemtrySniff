@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>SimMetrics.TelemetrySniff.Cli</RootNamespace>
+    <AssemblyName>SimMetrics.TelemetrySniff.Cli</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SimMetrics.TelemetrySniff.Core\SimMetrics.TelemetrySniff.Core.csproj" />
+  </ItemGroup>
+
+</Project>
