@@ -41,8 +41,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="SimMetrics.TelemetrySniff.Core\SimMetrics.TelemetrySniff.Core.csproj" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <Compile Include="SimMetrics.TelemetrySniff.Core\**\*.cs" Exclude="SimMetrics.TelemetrySniff.Core\obj\**;SimMetrics.TelemetrySniff.Core\bin\**" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <!-- Post-build event helper to copy DLL directly to SimHub plugin directory when building on Windows -->

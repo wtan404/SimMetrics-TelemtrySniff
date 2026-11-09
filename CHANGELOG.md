@@ -2,6 +2,16 @@
 
 All notable updates and project changes to `SimMetrics-TelemtrySniff` are documented in this file.
 
+## [2026-11-09] - Single-Assembly Plugin Consolidation & Zero-Dependency SimHub Build
+
+### Changed
+- **Zero-Dependency Single-DLL Build (`simmetryxObserver.dll`)**:
+  - Embedded `SimMetrics.TelemetrySniff.Core` source files directly into `SimMetrics.TelemetrySniff.csproj`, eliminating the need for a separate companion `SimMetrics.TelemetrySniff.Core.dll`.
+  - Configured `Newtonsoft.Json` package reference with `<ExcludeAssets>runtime</ExcludeAssets>` so SimHub's native `Newtonsoft.Json.dll` is utilized at runtime without bundling redundant copies.
+  - When compiled in Release mode, outputs a 100% self-contained single `simmetryxObserver.dll` (84 KB) ready for drop-in installation into any SimHub setup.
+- **Solution Compatibility Preserved**:
+  - Maintained `SimMetrics.TelemetrySniff.Core.csproj` for the standalone CLI runner and unit test suite, passing all 6 unit tests with zero regressions.
+
 ## [2026-11-08] - SimMetryx Observer Universal SimHub Plugin & AI-Readable Manifest
 
 ### Added
