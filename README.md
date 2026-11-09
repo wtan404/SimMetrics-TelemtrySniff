@@ -1,6 +1,6 @@
 # SimMetrics-TelemtrySniff
 
-A multi-mode telemetry capture, packet sniffing, and cataloging suite designed for virtual motorsports simulators—featuring a standalone **Assetto Corsa UDP Broadcast Listener & Protocol Sniffer** (`SimMetrics.TelemetrySniff.Cli`) alongside a unified **SimHub C# plugin** (`SimMetrics.TelemetrySniff.dll`).
+A multi-mode telemetry capture, packet sniffing, and cataloging suite designed for virtual motorsports simulators—featuring a standalone **Assetto Corsa UDP Broadcast Listener & Protocol Sniffer** (`SimMetrics.TelemetrySniff.Cli`) alongside a unified **SimHub C# plugin** (`simmetryxObserver.dll`).
 
 The operational intent of this tool is to act as an automated telemetry reverse-engineering recorder and schema generator for downstream data analytics, ML modeling, and dashboard development across **Assetto Corsa**, **Automobilista 2 (AMS2)**, **iRacing**, and **BeamNG.drive**.
 
@@ -19,8 +19,8 @@ The operational intent of this tool is to act as an automated telemetry reverse-
             ┌──────────────────┴──────────────────┐
             ▼                                     ▼
 ┌───────────────────────────────┐   ┌───────────────────────────────┐
-│ SimMetrics.TelemetrySniff.Cli │   │ SimMetrics.TelemetrySniff.Dll │
-│ (.NET 8 Standalone App)       │   │ (SimHub Plugin)               │
+│ SimMetrics.TelemetrySniff.Cli │   │ simmetryxObserver.dll         │
+│ (.NET 8 Standalone App)       │   │ (SimHub Observer Plugin)      │
 ├───────────────────────────────┤   ├───────────────────────────────┤
 │ • Interactive Terminal HUD    │   │ • SimHub In-App Capture       │
 │ • Active AC UDP Handshake     │   │ • 50+ SimHub Supported Titles │
@@ -34,18 +34,21 @@ The operational intent of this tool is to act as an automated telemetry reverse-
    - Actively connects to Assetto Corsa via UDP port `9996` with full handshake negotiation.
    - Passively sniffs incoming broadcast UDP packets across any specified port.
    - Provides an interactive ANSI terminal HUD with real-time tachometer, speedometer, input meters, and tyre telemetry.
-2. **SimHub Plugin Mode (`SimMetrics.TelemetrySniff.dll`)**:
+2. **SimHub Observer Plugin Mode (`simmetryxObserver.dll`)**:
    - Hosted directly inside SimHub for integrated in-rig capture.
    - Dynamic reflection on SimHub's runtime property catalog for automated schema dumps.
+   - Live simulator status indicator and on/off observation toggle.
 
 ---
 
 ## 📦 Output Formats
 
-Each capture session produces two artifacts in your documents folder (`Documents/SimMetrics/TelemetrySniff`) or custom output directory:
+Each observation session produces artifacts in your documents folder (`Documents/SimMetrics/TelemetrySniff`) or custom output directory:
 
-1. **`sniff_<GameName>_<Timestamp>.jsonl`**: A continuous stream of newline-delimited JSON frames captured at high frequency (1–60+ Hz).
-2. **`sniff_<GameName>_<Timestamp>.catalog.json`**: An ordered dictionary of every telemetry channel discovered during the capture session, complete with data types and sample values.
+1. **`sniff_<GameName>_<Timestamp>.summary.md`**: An AI/engineer-readable Markdown session manifest summarizing vehicle, circuit, laps, top speed, tyre thermal envelope, fuel deltas, and discovered channels.
+2. **`sniff_<GameName>_<Timestamp>.summary.json`**: Compact JSON metadata representation of the session performance envelope.
+3. **`sniff_<GameName>_<Timestamp>.jsonl`**: A continuous stream of newline-delimited JSON frames captured at high frequency (1–60+ Hz).
+4. **`sniff_<GameName>_<Timestamp>.catalog.json`**: An ordered dictionary of every telemetry channel discovered during the capture session, complete with data types and sample values.
 
 ---
 

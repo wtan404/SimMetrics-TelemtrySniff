@@ -7,14 +7,17 @@ using SimMetrics.TelemetrySniff.UI;
 
 namespace SimMetrics.TelemetrySniff
 {
-    [PluginDescription("Captures and catalogs telemetry datasets across AMS2, iRacing, AC, BeamNG, and other sims for reverse engineering and dataset mapping.")]
-    [PluginAuthor("SimMetrics")]
-    [PluginName("SimMetrics Telemetry Sniff")]
+    [PluginDescription("Universal telemetry observer and state data dumper across all racing simulators for testing and reverse engineering.")]
+    [PluginAuthor("SimMetryx")]
+    [PluginName("SimMetryx Observer")]
     public class TelemetrySniffPlugin : IPlugin, IDataPlugin, IWPFAddIn
     {
         public PluginManager? PluginManager { get; private set; }
         public SniffEngine Engine { get; } = new SniffEngine();
         private SniffPluginUI? _settingsControl;
+
+        private string _lastReportedGame = string.Empty;
+        private bool _lastReportedRunning = false;
 
         /// <summary>
         /// Plugin initialization upon SimHub startup.
@@ -25,9 +28,16 @@ namespace SimMetrics.TelemetrySniff
 
             // Declare exposed properties in SimHub
             pluginManager.AddProperty("IsCapturing", GetType(), false);
+            pluginManager.AddProperty("ActiveGame", GetType(), "None");
+            pluginManager.AddProperty("IsGameRunning", GetType(), false);
+            pluginManager.AddProperty("SessionType", GetType(), "None");
+            pluginManager.AddProperty("CurrentVehicle", GetType(), "None");
+            pluginManager.AddProperty("CurrentTrack", GetType(), "None");
+            pluginManager.AddProperty("StatusIndicator", GetType(), "⚪ STANDBY: No Simulator Running");
             pluginManager.AddProperty("FramesCaptured", GetType(), 0L);
             pluginManager.AddProperty("DiscoveredPropertiesCount", GetType(), 0);
             pluginManager.AddProperty("CurrentSessionFile", GetType(), string.Empty);
+            pluginManager.AddProperty("LastSummaryFile", GetType(), string.Empty);
             pluginManager.AddProperty("TargetHz", GetType(), Engine.TargetHz);
 
             // Register wheel / keyboard bindable actions
@@ -43,11 +53,35 @@ namespace SimMetrics.TelemetrySniff
         {
             Engine.ProcessFrame(pluginManager, ref data);
 
+            var activeGame = pluginManager.GameName ?? (data.GameRunning ? "UnknownSim" : "None");
+            var isRunning = data.GameRunning;
+            var sessionType = !string.IsNullOrEmpty(data.SessionTypeName) ? data.SessionTypeName : "Unknown";
+            var car = data.NewData != null && !string.IsNullOrEmpty(data.NewData.CarModel) ? data.NewData.CarModel : "Unknown Vehicle";
+            var track = data.NewData != null && !string.IsNullOrEmpty(data.NewData.TrackCode) ? data.NewData.TrackCode : "Unknown Track";
+
+            // Track game launch transitions
+            if (isRunning != _lastReportedRunning || (!string.IsNullOrEmpty(activeGame) && activeGame != _lastReportedGame))
+            {
+                _lastReportedGame = activeGame;
+                _lastReportedRunning = isRunning;
+            }
+
+            var statusIndicator = isRunning
+                ? $"{(Engine.IsCapturing ? "🔴 RECORDING" : "🟢 LIVE")}: {activeGame} [{sessionType}] @ {track}"
+                : "⚪ STANDBY: No Simulator Running";
+
             // Update registered SimHub properties
             pluginManager.SetPropertyValue("IsCapturing", GetType(), Engine.IsCapturing);
+            pluginManager.SetPropertyValue("ActiveGame", GetType(), isRunning ? activeGame : "None");
+            pluginManager.SetPropertyValue("IsGameRunning", GetType(), isRunning);
+            pluginManager.SetPropertyValue("SessionType", GetType(), isRunning ? sessionType : "None");
+            pluginManager.SetPropertyValue("CurrentVehicle", GetType(), isRunning ? car : "None");
+            pluginManager.SetPropertyValue("CurrentTrack", GetType(), isRunning ? track : "None");
+            pluginManager.SetPropertyValue("StatusIndicator", GetType(), statusIndicator);
             pluginManager.SetPropertyValue("FramesCaptured", GetType(), Engine.FramesCaptured);
             pluginManager.SetPropertyValue("DiscoveredPropertiesCount", GetType(), Engine.DiscoveredPropertyCount);
             pluginManager.SetPropertyValue("CurrentSessionFile", GetType(), Engine.CurrentSessionFile ?? string.Empty);
+            pluginManager.SetPropertyValue("LastSummaryFile", GetType(), Engine.LastSummaryMarkdownFile ?? string.Empty);
             pluginManager.SetPropertyValue("TargetHz", GetType(), Engine.TargetHz);
         }
 
@@ -66,7 +100,12 @@ namespace SimMetrics.TelemetrySniff
         public void StartCapture()
         {
             if (PluginManager == null || Engine.IsCapturing) return;
-            Engine.StartCapture(PluginManager.GameName);
+            var game = PluginManager.GameName;
+            if (string.IsNullOrWhiteSpace(game))
+            {
+                game = "Simulator";
+            }
+            Engine.StartCapture(game);
         }
 
         public void StopCapture()
@@ -96,6 +135,6 @@ namespace SimMetrics.TelemetrySniff
         }
 
         public ImageSource? PictureIcon => null;
-        public string LeftMenuTitle => "Telemetry Sniff";
+        public string LeftMenuTitle => "SimMetryx Observer";
     }
 }

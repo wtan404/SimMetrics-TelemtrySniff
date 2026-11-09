@@ -10,6 +10,7 @@ using GameReaderCommon;
 using Newtonsoft.Json;
 using SimHub.Plugins;
 using SimMetrics.TelemetrySniff.Models;
+using SessionSummary = SimMetrics.TelemetrySniff.Core.Models.SessionSummary;
 
 namespace SimMetrics.TelemetrySniff
 {
@@ -30,6 +31,9 @@ namespace SimMetrics.TelemetrySniff
         public double CurrentHz { get; private set; }
         public int DiscoveredPropertyCount { get; private set; }
         public string? CurrentSessionFile { get; private set; }
+        public string? LastSummaryMarkdownFile { get; private set; }
+        public string? LastSummaryJsonFile { get; private set; }
+        public SessionSummary? CurrentSessionSummary { get; private set; }
 
         // Settings
         public bool IsCapturing { get; private set; }
@@ -63,6 +67,16 @@ namespace SimMetrics.TelemetrySniff
             _writerTask = Task.Run(() => ProcessWriteQueue(_cts.Token));
             FramesCaptured = 0;
             IsCapturing = true;
+
+            CurrentSessionSummary = new SessionSummary
+            {
+                GameName = safeGame,
+                StartTimeUtc = DateTime.UtcNow,
+                TargetHz = TargetHz,
+                RawDataCaptured = CaptureRawPayload,
+                MinTyreTempC = 999.0,
+                MaxTyreTempC = 0.0
+            };
         }
 
         public void StopCapture(PluginManager pluginManager)
@@ -82,10 +96,11 @@ namespace SimMetrics.TelemetrySniff
             _currentWriter?.Dispose();
             _currentWriter = null;
 
-            // Generate schema catalog alongside the recording
+            // Generate schema catalog and AI-readable session summary alongside the recording
             if (CurrentSessionFile != null)
             {
                 ExportSchemaCatalog(pluginManager, CurrentSessionFile);
+                ExportSessionSummary(CurrentSessionFile);
             }
         }
 
@@ -141,6 +156,54 @@ namespace SimMetrics.TelemetrySniff
             if (_packetQueue.TryAdd(packet))
             {
                 FramesCaptured++;
+            }
+
+            // Update session performance envelope for AI summary
+            if (CurrentSessionSummary != null)
+            {
+                if (CurrentSessionSummary.SessionType == "Unknown" && !string.IsNullOrEmpty(data.SessionTypeName))
+                    CurrentSessionSummary.SessionType = data.SessionTypeName;
+
+                if (CurrentSessionSummary.CarModel == "Unknown" && !string.IsNullOrEmpty(data.NewData.CarModel))
+                    CurrentSessionSummary.CarModel = data.NewData.CarModel;
+
+                if (CurrentSessionSummary.TrackCode == "Unknown" && !string.IsNullOrEmpty(data.NewData.TrackCode))
+                    CurrentSessionSummary.TrackCode = data.NewData.TrackCode;
+
+                if (data.NewData.SpeedKmh > CurrentSessionSummary.TopSpeedKmh)
+                    CurrentSessionSummary.TopSpeedKmh = data.NewData.SpeedKmh;
+
+                if (data.NewData.Rpms > CurrentSessionSummary.MaxRpm)
+                    CurrentSessionSummary.MaxRpm = data.NewData.Rpms;
+
+                if (data.NewData.CompletedLaps > CurrentSessionSummary.CompletedLaps)
+                    CurrentSessionSummary.CompletedLaps = data.NewData.CompletedLaps;
+
+                if (data.NewData.BestLapTime.HasValue)
+                    CurrentSessionSummary.BestLapTime = data.NewData.BestLapTime;
+
+                if (data.NewData.LastLapTime.HasValue)
+                    CurrentSessionSummary.LastLapTime = data.NewData.LastLapTime;
+
+                if (CurrentSessionSummary.FuelStart <= 0 && data.NewData.Fuel > 0)
+                    CurrentSessionSummary.FuelStart = data.NewData.Fuel;
+                CurrentSessionSummary.FuelEnd = data.NewData.Fuel;
+
+                var tyres = new[]
+                {
+                    data.NewData.TyreTemperatureFrontLeft,
+                    data.NewData.TyreTemperatureFrontRight,
+                    data.NewData.TyreTemperatureRearLeft,
+                    data.NewData.TyreTemperatureRearRight
+                };
+                foreach (var t in tyres)
+                {
+                    if (t > 0)
+                    {
+                        if (t < CurrentSessionSummary.MinTyreTempC) CurrentSessionSummary.MinTyreTempC = t;
+                        if (t > CurrentSessionSummary.MaxTyreTempC) CurrentSessionSummary.MaxTyreTempC = t;
+                    }
+                }
             }
         }
 
@@ -257,6 +320,34 @@ namespace SimMetrics.TelemetrySniff
                 File.WriteAllText(catalogPath, json);
             }
             catch (Exception) { /* schema dump best-effort */ }
+        }
+
+        private void ExportSessionSummary(string sessionJsonlPath)
+        {
+            if (CurrentSessionSummary == null) return;
+
+            try
+            {
+                CurrentSessionSummary.EndTimeUtc = DateTime.UtcNow;
+                CurrentSessionSummary.TotalFrames = FramesCaptured;
+                CurrentSessionSummary.DiscoveredChannelsCount = DiscoveredPropertyCount;
+                CurrentSessionSummary.JsonlFilePath = sessionJsonlPath;
+                CurrentSessionSummary.CatalogFilePath = Path.ChangeExtension(sessionJsonlPath, ".catalog.json");
+                if (CurrentSessionSummary.MinTyreTempC >= 999.0)
+                {
+                    CurrentSessionSummary.MinTyreTempC = 0.0;
+                }
+
+                LastSummaryMarkdownFile = Path.ChangeExtension(sessionJsonlPath, ".summary.md");
+                LastSummaryJsonFile = Path.ChangeExtension(sessionJsonlPath, ".summary.json");
+
+                File.WriteAllText(LastSummaryMarkdownFile, CurrentSessionSummary.ToMarkdown());
+                File.WriteAllText(LastSummaryJsonFile, CurrentSessionSummary.ToJson(indented: true));
+            }
+            catch (Exception)
+            {
+                // Best-effort export to prevent capture loop exceptions
+            }
         }
 
         private void ProcessWriteQueue(CancellationToken token)

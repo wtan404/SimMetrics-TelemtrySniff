@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
-             d:DesignHeight="550" d:DesignWidth="800"
+             d:DesignHeight="650" d:DesignWidth="850"
              Background="#1E1E1E" Foreground="#FFFFFF" FontFamily="Segoe UI">
     <Grid Margin="20">
         <Grid.RowDefinitions>
@@ -15,14 +15,14 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <StackPanel Grid.Row="0" Margin="0,0,0,20">
-            <TextBlock Text="SimMetrics Telemetry Sniffer" FontSize="24" FontWeight="SemiBold" Foreground="#3890E6"/>
-            <TextBlock Text="Capture, catalog, and map raw simulator telemetry broadcasts across AMS2, iRacing, Assetto Corsa, BeamNG, and more."
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="SimMetryx Observer" FontSize="26" FontWeight="Bold" Foreground="#3890E6"/>
+            <TextBlock Text="Universal simulator listener, state observer, and telemetry data dumper for testing and engineering analysis."
                        FontSize="13" Foreground="#AAAAAA" Margin="0,4,0,0"/>
         </StackPanel>
 
-        <!-- Status & Controls Card -->
-        <Border Grid.Row="1" Background="#282828" CornerRadius="8" Padding="16" Margin="0,0,0,16">
+        <!-- Active Game & Status Banner -->
+        <Border Grid.Row="1" Background="#282828" CornerRadius="8" Padding="16" Margin="0,0,0,16" BorderBrush="#3890E6" BorderThickness="1">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -30,29 +30,38 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0">
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                        <TextBlock Text="Target Simulator: " FontWeight="Bold" Foreground="#888888"/>
-                        <TextBlock x:Name="TxtGameName" Text="No game running" FontWeight="Bold" Foreground="#FFD700" Margin="6,0,0,0"/>
+                    <!-- Game Indicator Badge -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8" VerticalAlignment="Center">
+                        <Border x:Name="BadgeIndicator" Background="#555555" CornerRadius="12" Padding="8,3" Margin="0,0,10,0">
+                            <TextBlock x:Name="TxtBadgeStatus" Text="STANDBY" FontWeight="Bold" FontSize="11" Foreground="White"/>
+                        </Border>
+                        <TextBlock Text="Active Simulator: " FontWeight="Bold" FontSize="15" Foreground="#888888" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="TxtGameName" Text="No Game Running" FontWeight="Bold" FontSize="16" Foreground="#FFD700" Margin="6,0,0,0" VerticalAlignment="Center"/>
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                        <TextBlock Text="Status: " FontWeight="Bold" Foreground="#888888"/>
-                        <TextBlock x:Name="TxtStatus" Text="Idle" FontWeight="SemiBold" Foreground="#00FF66" Margin="6,0,0,0"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                        <TextBlock Text="Frames Captured: " FontWeight="Bold" Foreground="#888888"/>
-                        <TextBlock x:Name="TxtFrames" Text="0" Foreground="#FFFFFF" Margin="6,0,0,0"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Discovered Channels: " FontWeight="Bold" Foreground="#888888"/>
-                        <TextBlock x:Name="TxtPropertiesCount" Text="0" Foreground="#FFFFFF" Margin="6,0,0,0"/>
-                    </StackPanel>
+
+                    <!-- Session & Car/Track Info -->
+                    <TextBlock x:Name="TxtSessionDetail" Text="Waiting for simulator session launch..." FontSize="13" Foreground="#CCCCCC" Margin="0,0,0,10"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="0,0,24,0">
+                            <TextBlock Text="Frames Captured: " FontWeight="Bold" Foreground="#888888"/>
+                            <TextBlock x:Name="TxtFrames" Text="0" Foreground="#FFFFFF" Margin="6,0,0,0"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <TextBlock Text="Discovered Channels: " FontWeight="Bold" Foreground="#888888"/>
+                            <TextBlock x:Name="TxtPropertiesCount" Text="0" Foreground="#FFFFFF" Margin="6,0,0,0"/>
+                        </StackPanel>
+                    </Grid>
                 </StackPanel>
 
-                <StackPanel Grid.Column="1" VerticalAlignment="Center" Orientation="Horizontal">
-                    <Button x:Name="BtnStart" Content="Start Sniffing" Click="BtnStart_Click"
-                            Background="#007ACC" Foreground="White" Padding="16,8" Margin="0,0,8,0" FontWeight="Bold"/>
-                    <Button x:Name="BtnStop" Content="Stop &amp; Export" Click="BtnStop_Click"
-                            Background="#AA3333" Foreground="White" Padding="16,8" IsEnabled="False" FontWeight="Bold"/>
+                <!-- Primary Observer Toggle Control -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="16,0,0,0">
+                    <Button x:Name="BtnToggleCapture" Content="▶️ START OBSERVER" Click="BtnToggleCapture_Click"
+                            Background="#0E70A6" Foreground="White" Padding="20,12" FontSize="14" FontWeight="Bold" Cursor="Hand"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -60,13 +69,13 @@
         <!-- Configuration Settings Card -->
         <Border Grid.Row="2" Background="#282828" CornerRadius="8" Padding="16" Margin="0,0,0,16">
             <StackPanel>
-                <TextBlock Text="Capture Configuration" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                <TextBlock Text="Observer Configuration" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,12"/>
 
                 <Grid Margin="0,0,0,10">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="220"/>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="50"/>
+                        <ColumnDefinition Width="60"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" Text="Sampling Frequency (Hz):" VerticalAlignment="Center"/>
                     <Slider Grid.Column="1" x:Name="SliderHz" Minimum="1" Maximum="60" Value="30" TickFrequency="5"
@@ -74,30 +83,41 @@
                     <TextBlock Grid.Column="2" x:Name="TxtHz" Text="30 Hz" VerticalAlignment="Center" Margin="10,0,0,0"/>
                 </Grid>
 
-                <CheckBox x:Name="ChkRawPayload" Content="Capture Game Raw Buffers (e.g. iRacing VarHeaders, PC2 SharedMemory, OutGauge)"
+                <CheckBox x:Name="ChkRawPayload" Content="Capture Game Raw Buffers (iRacing VarHeaders, PC2 SharedMemory, OutGauge, AC)"
                           IsChecked="True" Margin="0,4,0,8" Foreground="White" Checked="ChkConfig_Changed" Unchecked="ChkConfig_Changed"/>
                 <CheckBox x:Name="ChkDynamicProps" Content="Capture Dynamic SimHub Properties Registry (Auto-discovery of all exposed channels)"
                           IsChecked="True" Margin="0,0,0,12" Foreground="White" Checked="ChkConfig_Changed" Unchecked="ChkConfig_Changed"/>
 
-                <TextBlock Text="Output Directory:" Margin="0,0,0,4"/>
-                <Grid>
+                <TextBlock Text="Output Directory (Artifacts):" Margin="0,0,0,4"/>
+                <Grid Margin="0,0,0,10">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <TextBox Grid.Column="0" x:Name="TxtOutputDir" IsReadOnly="True" Background="#181818" Foreground="#E0E0E0" Padding="6"/>
-                    <Button Grid.Column="1" Content="Open Folder" Click="BtnOpenFolder_Click" Margin="8,0,0,0" Padding="12,4"/>
+                    <Button Grid.Column="1" Content="Open Folder" Click="BtnOpenFolder_Click" Margin="8,0,0,0" Padding="14,4"/>
+                </Grid>
+
+                <!-- Latest AI-Readable Summary -->
+                <TextBlock Text="Latest AI-Readable Summary (.summary.md):" Margin="0,0,0,4"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0" x:Name="TxtLastSummary" IsReadOnly="True" Text="No capture completed yet" Background="#181818" Foreground="#A0A0A0" Padding="6"/>
+                    <Button Grid.Column="1" x:Name="BtnOpenSummary" Content="View Summary" Click="BtnOpenSummary_Click" IsEnabled="False" Margin="8,0,0,0" Padding="14,4"/>
                 </Grid>
             </StackPanel>
         </Border>
 
-        <!-- Info / Tip Footer -->
+        <!-- Information / AI Agent Integration Footer -->
         <Border Grid.Row="3" Background="#222222" CornerRadius="8" Padding="16">
             <StackPanel>
-                <TextBlock Text="💡 Tips for Mapping Future Projects" FontWeight="Bold" Margin="0,0,0,6" Foreground="#3890E6"/>
-                <TextBlock Text="1. When you Stop Sniffing, two files are created: a .jsonl stream containing continuous telemetry frames, and a .catalog.json file detailing all discovered properties and their data types."
+                <TextBlock Text="🤖 Antigravity &amp; AI Integration Notes" FontWeight="Bold" Margin="0,0,0,6" Foreground="#3890E6"/>
+                <TextBlock Text="• Whenever you stop an observation session, SimMetryx Observer generates a Markdown manifest (.summary.md) alongside the raw .jsonl packet stream and schema catalog."
                            TextWrapping="Wrap" Foreground="#CCCCCC" Margin="0,0,0,4"/>
-                <TextBlock Text="2. Map steering, wheel slip, suspension travel, and engine maps across games by comparing the normalized packet alongside the game-specific raw payload."
+                <TextBlock Text="• Antigravity can read this summary file directly in conversations to inspect session outcomes, top speeds, lap performance, and discovered simulator properties."
                            TextWrapping="Wrap" Foreground="#CCCCCC"/>
             </StackPanel>
         </Border>

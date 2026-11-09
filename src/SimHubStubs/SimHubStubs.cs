@@ -71,7 +71,9 @@ namespace GameReaderCommon
     public class StatusData
     {
         public string CarModel { get; set; } = string.Empty;
+        public string CarClass { get; set; } = string.Empty;
         public string TrackCode { get; set; } = string.Empty;
+        public string TrackName { get; set; } = string.Empty;
         public double SpeedKmh { get; set; }
         public double Rpms { get; set; }
         public double MaxRpm { get; set; }

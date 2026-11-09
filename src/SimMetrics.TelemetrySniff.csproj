@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net8.0-windows;net48</TargetFrameworks>
-    <AssemblyName>SimMetrics.TelemetrySniff</AssemblyName>
+    <AssemblyName>simmetryxObserver</AssemblyName>
     <RootNamespace>SimMetrics.TelemetrySniff</RootNamespace>
     <OutputType>Library</OutputType>
     <LangVersion>latest</LangVersion>

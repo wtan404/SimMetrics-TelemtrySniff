@@ -2,6 +2,29 @@
 
 All notable updates and project changes to `SimMetrics-TelemtrySniff` are documented in this file.
 
+## [2026-11-08] - SimMetryx Observer Universal SimHub Plugin & AI-Readable Manifest
+
+### Added
+- **Assembly Renaming to `simmetryxObserver.dll`**:
+  - Configured `SimMetrics.TelemetrySniff.csproj` with assembly target `<AssemblyName>simmetryxObserver</AssemblyName>`, building `simmetryxObserver.dll` across `.NET 8 (Windows)` and `.NET Framework 4.8`.
+- **Dynamic Game & Session Indicators**:
+  - Implemented live game auto-detection tracking runtime transitions across all 50+ SimHub supported simulators (AMS2, Assetto Corsa, ACC, iRacing, BeamNG, etc.).
+  - Registered SimHub properties: `ActiveGame`, `IsGameRunning`, `SessionType`, `CurrentVehicle`, `CurrentTrack`, `StatusIndicator`, and `LastSummaryFile`.
+  - Added visual status badge to the WPF UI (`SniffPluginUI.xaml`): `🟢 SIM RUNNING`, `🔴 OBSERVING`, `⚪ STANDBY`.
+- **Togglable Observer Controls**:
+  - Added primary On/Off observer toggle (`BtnToggleCapture`) in `SniffPluginUI.xaml` with dynamic color transitions and text states.
+  - Registered bindable SimHub action `SimMetrics.TelemetrySniff.ToggleCapture` for hardware steering wheel buttons and streamdecks.
+- **AI-Readable Session Manifests (`SessionSummary`)**:
+  - Added `SessionSummary.cs` in `SimMetrics.TelemetrySniff.Core.Models` to compute performance envelopes (top speed, peak RPM, completed laps, tyre temperature extremes, fuel deltas).
+  - Automatically exports `sniff_<Game>_<Timestamp>.summary.md` and `sniff_<Game>_<Timestamp>.summary.json` alongside `.jsonl` and `.catalog.json` upon observation stop.
+  - Provides Antigravity and AI assistants with instant readability for telemetry audits and engineering reviews.
+- **Unit Testing**:
+  - Added `SessionSummaryTests.cs` in `SimMetrics.TelemetrySniff.Tests` verifying derived metric calculations, Markdown manifest formatting, and JSON serialization.
+
+### Changed
+- Refactored `TelemetrySniffPlugin.cs` and `SniffEngine.cs` to integrate `SessionSummary` tracking without blocking telemetry processing loops.
+- Updated `README.md` architecture diagrams, plugin naming, and output format documentation.
+
 ## [2026-11-07] - Assetto Corsa UDP Broadcast Engine & Standalone CLI
 
 ### Added
