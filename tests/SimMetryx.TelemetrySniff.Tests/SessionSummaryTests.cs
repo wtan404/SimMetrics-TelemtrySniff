@@ -1,9 +1,9 @@
 using System;
 using Newtonsoft.Json;
-using SimMetrics.TelemetrySniff.Core.Models;
+using SimMetryx.TelemetrySniff.Core.Models;
 using Xunit;
 
-namespace SimMetrics.TelemetrySniff.Tests
+namespace SimMetryx.TelemetrySniff.Tests
 {
     public class SessionSummaryTests
     {
@@ -33,8 +33,8 @@ namespace SimMetrics.TelemetrySniff.Tests
                 MaxTyreTempC = 92.3,
                 DiscoveredChannelsCount = 250,
                 RawDataCaptured = true,
-                JsonlFilePath = @"C:\SimMetrics\sniff.jsonl",
-                CatalogFilePath = @"C:\SimMetrics\sniff.catalog.json"
+                JsonlFilePath = @"C:\SimMetryx\sniff.jsonl",
+                CatalogFilePath = @"C:\SimMetryx\sniff.catalog.json"
             };
 
             Assert.Equal(TimeSpan.FromSeconds(100), summary.Duration);

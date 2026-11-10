@@ -3,16 +3,16 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using GameReaderCommon;
 using SimHub.Plugins;
-using SimMetrics.TelemetrySniff.UI;
+using SimMetryx.TelemetrySniff.UI;
 
-namespace SimMetrics.TelemetrySniff
+namespace SimMetryx.TelemetrySniff
 {
     [PluginDescription("Universal telemetry observer and state data dumper across all racing simulators for testing and reverse engineering.")]
     [PluginAuthor("SimMetryx")]
     [PluginName("SimMetryx Observer")]
-    public class TelemetrySniffPlugin : IPlugin, IDataPlugin, IWPFAddIn
+    public class TelemetrySniffPlugin : IPlugin, IDataPlugin, IWPFSettingsV2
     {
-        public PluginManager? PluginManager { get; private set; }
+        public PluginManager PluginManager { get; set; }
         public SniffEngine Engine { get; } = new SniffEngine();
         private SniffPluginUI? _settingsControl;
 
@@ -55,7 +55,7 @@ namespace SimMetrics.TelemetrySniff
 
             var activeGame = pluginManager.GameName ?? (data.GameRunning ? "UnknownSim" : "None");
             var isRunning = data.GameRunning;
-            var sessionType = !string.IsNullOrEmpty(data.SessionTypeName) ? data.SessionTypeName : "Unknown";
+            var sessionType = !string.IsNullOrEmpty(data.NewData?.SessionTypeName) ? data.NewData.SessionTypeName : "Unknown";
             var car = data.NewData != null && !string.IsNullOrEmpty(data.NewData.CarModel) ? data.NewData.CarModel : "Unknown Vehicle";
             var track = data.NewData != null && !string.IsNullOrEmpty(data.NewData.TrackCode) ? data.NewData.TrackCode : "Unknown Track";
 

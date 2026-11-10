@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace SimMetrics.TelemetrySniff.Models
+namespace SimMetryx.TelemetrySniff.Models
 {
     /// <summary>
     /// Represents a discrete telemetry capture frame containing normalized metrics,

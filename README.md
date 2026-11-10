@@ -1,6 +1,6 @@
-# SimMetrics-TelemtrySniff
+# SimMetryx-TelemetrySniff
 
-A multi-mode telemetry capture, packet sniffing, and cataloging suite designed for virtual motorsports simulators—featuring a standalone **Assetto Corsa UDP Broadcast Listener & Protocol Sniffer** (`SimMetrics.TelemetrySniff.Cli`) alongside a unified **SimHub C# plugin** (`simmetryxObserver.dll`).
+A multi-mode telemetry capture, packet sniffing, and cataloging suite designed for virtual motorsports simulators—featuring a standalone **Assetto Corsa UDP Broadcast Listener & Protocol Sniffer** (`SimMetryx.TelemetrySniff.Cli`) alongside a unified **SimHub C# plugin** (`SimMetryxObserver.dll`).
 
 The operational intent of this tool is to act as an automated telemetry reverse-engineering recorder and schema generator for downstream data analytics, ML modeling, and dashboard development across **Assetto Corsa**, **Automobilista 2 (AMS2)**, **iRacing**, and **BeamNG.drive**.
 
@@ -10,7 +10,7 @@ The operational intent of this tool is to act as an automated telemetry reverse-
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│              SimMetrics.TelemetrySniff.Core                 │
+│              SimMetryx.TelemetrySniff.Core                  │
 │   • Universal TelemetryPacket & NormalizedData Channels     │
 │   • Assetto Corsa Binary Datagram Parser (RT_CAR_INFO, Lap) │
 │   • Non-blocking JSONL Streamer & Schema Catalog Generator  │
@@ -19,7 +19,7 @@ The operational intent of this tool is to act as an automated telemetry reverse-
             ┌──────────────────┴──────────────────┐
             ▼                                     ▼
 ┌───────────────────────────────┐   ┌───────────────────────────────┐
-│ SimMetrics.TelemetrySniff.Cli │   │ simmetryxObserver.dll         │
+│ SimMetryx.TelemetrySniff.Cli  │   │ SimMetryxObserver.dll         │
 │ (.NET 8 Standalone App)       │   │ (SimHub Observer Plugin)      │
 ├───────────────────────────────┤   ├───────────────────────────────┤
 │ • Interactive Terminal HUD    │   │ • SimHub In-App Capture       │
@@ -29,7 +29,7 @@ The operational intent of this tool is to act as an automated telemetry reverse-
 └───────────────────────────────┘   └───────────────────────────────┘
 ```
 
-1. **Standalone CLI Mode (`SimMetrics.TelemetrySniff.Cli`)**:
+1. **Standalone CLI Mode (`SimMetryx.TelemetrySniff.Cli`)**:
    - Zero dependency on SimHub or external host software.
    - Actively connects to Assetto Corsa via UDP port `9996` with full handshake negotiation.
    - Passively sniffs incoming broadcast UDP packets across any specified port.
@@ -43,7 +43,7 @@ The operational intent of this tool is to act as an automated telemetry reverse-
 
 ## 📦 Output Formats
 
-Each observation session produces artifacts in your documents folder (`Documents/SimMetrics/TelemetrySniff`) or custom output directory:
+Each observation session produces artifacts in your documents folder (`Documents/SimMetryx/TelemetrySniff`) or custom output directory:
 
 1. **`sniff_<GameName>_<Timestamp>.summary.md`**: An AI/engineer-readable Markdown session manifest summarizing vehicle, circuit, laps, top speed, tyre thermal envelope, fuel deltas, and discovered channels.
 2. **`sniff_<GameName>_<Timestamp>.summary.json`**: Compact JSON metadata representation of the session performance envelope.
@@ -73,19 +73,19 @@ From the repository root:
 #### Mode A: Active UDP Handshake (Default)
 Connects directly to Assetto Corsa, completes the binary handshake, and streams real-time vehicle telemetry:
 ```bash
-dotnet run --project src/SimMetrics.TelemetrySniff.Cli -- --ip 127.0.0.1 --port 9996
+dotnet run --project src/SimMetryx.TelemetrySniff.Cli -- --ip 127.0.0.1 --port 9996
 ```
 
 #### Mode B: Passive Broadcast Sniffing
 Listens on a local UDP port for broadcast or forwarded packets without issuing handshake datagrams:
 ```bash
-dotnet run --project src/SimMetrics.TelemetrySniff.Cli -- --mode passive --port 9996
+dotnet run --project src/SimMetryx.TelemetrySniff.Cli -- --mode passive --port 9996
 ```
 
 #### Mode C: Simulated Demo Mode
 Previews the real-time ANSI terminal HUD and verifies disk recording without launching the game:
 ```bash
-dotnet run --project src/SimMetrics.TelemetrySniff.Cli -- --mode demo
+dotnet run --project src/SimMetryx.TelemetrySniff.Cli -- --mode demo
 ```
 
 ### CLI Command Options
@@ -120,11 +120,11 @@ Options:
    ```
 2. Build the solution:
    ```bash
-   dotnet build SimMetrics-TelemtrySniff.sln -c Release
+   dotnet build SimMetryx-TelemetrySniff.sln -c Release
    ```
 3. Run tests:
    ```bash
-   dotnet test SimMetrics-TelemtrySniff.sln
+   dotnet test SimMetryx-TelemetrySniff.sln
    ```
 
 ---

@@ -7,9 +7,9 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using SimMetrics.TelemetrySniff.Core.Models;
+using SimMetryx.TelemetrySniff.Core.Models;
 
-namespace SimMetrics.TelemetrySniff.Core.Storage
+namespace SimMetryx.TelemetrySniff.Core.Storage
 {
     /// <summary>
     /// High-throughput, non-blocking telemetry recorder that persists packets
@@ -37,7 +37,7 @@ namespace SimMetrics.TelemetrySniff.Core.Storage
                 {
                     docs = AppContext.BaseDirectory;
                 }
-                OutputDirectory = Path.Combine(docs, "SimMetrics", "TelemetrySniff");
+                OutputDirectory = Path.Combine(docs, "SimMetryx", "TelemetrySniff");
             }
             else
             {

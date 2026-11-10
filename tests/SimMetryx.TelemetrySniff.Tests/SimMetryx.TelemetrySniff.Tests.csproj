@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\SimMetrics.TelemetrySniff.Core\SimMetrics.TelemetrySniff.Core.csproj" />
+    <ProjectReference Include="..\..\src\SimMetryx.TelemetrySniff.Core\SimMetryx.TelemetrySniff.Core.csproj" />
   </ItemGroup>
 
 </Project>

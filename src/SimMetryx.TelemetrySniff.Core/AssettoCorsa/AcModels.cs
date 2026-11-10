@@ -2,7 +2,7 @@ using System;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace SimMetrics.TelemetrySniff.Core.AssettoCorsa
+namespace SimMetryx.TelemetrySniff.Core.AssettoCorsa
 {
     public enum AcOperationId
     {

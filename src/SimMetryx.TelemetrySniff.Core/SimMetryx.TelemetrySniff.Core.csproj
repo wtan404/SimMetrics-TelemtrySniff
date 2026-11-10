@@ -4,8 +4,8 @@
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
-    <RootNamespace>SimMetrics.TelemetrySniff.Core</RootNamespace>
-    <AssemblyName>SimMetrics.TelemetrySniff.Core</AssemblyName>
+    <RootNamespace>SimMetryx.TelemetrySniff.Core</RootNamespace>
+    <AssemblyName>SimMetryx.TelemetrySniff.Core</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

@@ -38,11 +38,15 @@ namespace SimHub.Plugins
         void DataUpdate(PluginManager pluginManager, ref GameReaderCommon.GameData data);
     }
 
-    public interface IWPFAddIn
+    public interface IWPFSettingsV2
     {
         Control GetWPFSettingsControl(PluginManager pluginManager);
         ImageSource? PictureIcon { get; }
         string LeftMenuTitle { get; }
+    }
+
+    public interface IWPFAddIn : IWPFSettingsV2
+    {
     }
 
     public class PluginManager
@@ -65,10 +69,10 @@ namespace GameReaderCommon
         public bool GameRunning { get; set; } = true;
         public bool GamePaused { get; set; } = false;
         public string SessionTypeName { get; set; } = "Practice";
-        public StatusData NewData { get; set; } = new StatusData();
+        public StatusDataBase NewData { get; set; } = new StatusDataBase();
     }
 
-    public class StatusData
+    public class StatusDataBase
     {
         public string CarModel { get; set; } = string.Empty;
         public string CarClass { get; set; } = string.Empty;
@@ -112,6 +116,10 @@ namespace GameReaderCommon
         public double TyreWearRearRight { get; set; }
 
         public virtual object? GetRawDataObject() => null;
+    }
+
+    public class StatusData : StatusDataBase
+    {
     }
 }
 #endif

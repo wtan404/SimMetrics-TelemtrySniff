@@ -1,16 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0-windows;net48</TargetFrameworks>
-    <AssemblyName>simmetryxObserver</AssemblyName>
-    <RootNamespace>SimMetrics.TelemetrySniff</RootNamespace>
+    <TargetFramework>net48</TargetFramework>
+    <AssemblyName>SimMetryxObserver</AssemblyName>
+    <RootNamespace>SimMetryx.TelemetrySniff</RootNamespace>
     <OutputType>Library</OutputType>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
-    <SimHubDir Condition="'$(SimHubDir)' == ''">C:\Program Files (x86)\SimHub</SimHubDir>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <SimHubDir Condition="'$(SimHubDir)' == '' and Exists('D:\Program Files\SimHub\SimHub.Plugins.dll')">D:\Program Files\SimHub</SimHubDir>
+    <SimHubDir Condition="'$(SimHubDir)' == '' and Exists('C:\Program Files (x86)\SimHub\SimHub.Plugins.dll')">C:\Program Files (x86)\SimHub</SimHubDir>
+    <SimHubDir Condition="'$(SimHubDir)' == ''">D:\Program Files\SimHub</SimHubDir>
     <DefineConstants Condition="Exists('$(SimHubDir)\SimHub.Plugins.dll')">$(DefineConstants);SIMHUB_REAL</DefineConstants>
-    <DefaultItemExcludes>$(DefaultItemExcludes);SimMetrics.TelemetrySniff.Core\**;SimMetrics.TelemetrySniff.Cli\**</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);SimMetryx.TelemetrySniff.Core\**;SimMetryx.TelemetrySniff.Cli\**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup Condition="Exists('$(SimHubDir)\SimHub.Plugins.dll')">
@@ -18,12 +21,12 @@
       <HintPath>$(SimHubDir)\SimHub.Plugins.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="GameManager">
-      <HintPath>$(SimHubDir)\GameManager.dll</HintPath>
+    <Reference Include="GameReaderCommon">
+      <HintPath>$(SimHubDir)\GameReaderCommon.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="WPFAspects">
-      <HintPath>$(SimHubDir)\WPFAspects.dll</HintPath>
+    <Reference Include="SimHub.Logging">
+      <HintPath>$(SimHubDir)\SimHub.Logging.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="MahApps.Metro">
@@ -41,15 +44,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="SimMetrics.TelemetrySniff.Core\**\*.cs" Exclude="SimMetrics.TelemetrySniff.Core\obj\**;SimMetrics.TelemetrySniff.Core\bin\**" />
+    <Compile Include="SimMetryx.TelemetrySniff.Core\**\*.cs" Exclude="SimMetryx.TelemetrySniff.Core\obj\**;SimMetryx.TelemetrySniff.Core\bin\**" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
   </ItemGroup>
 
-  <!-- Post-build event helper to copy DLL directly to SimHub plugin directory when building on Windows -->
   <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT' And Exists('$(SimHubDir)')">
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(SimHubDir)" ContinueOnError="true" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(SimHubDir)\simmetryxObserver.dll" ContinueOnError="true" />
   </Target>
 
 </Project>

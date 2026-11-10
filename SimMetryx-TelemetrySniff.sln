@@ -2,17 +2,17 @@
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimMetrics.TelemetrySniff", "src\SimMetrics.TelemetrySniff.csproj", "{B8A2B9F4-1E32-4720-B58A-9A2E8B1C3F9A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimMetryx.TelemetrySniff", "src\SimMetryx.TelemetrySniff.csproj", "{B8A2B9F4-1E32-4720-B58A-9A2E8B1C3F9A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{073509EF-D890-4F0C-B34C-59033BF01E26}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimMetrics.TelemetrySniff.Core", "src\SimMetrics.TelemetrySniff.Core\SimMetrics.TelemetrySniff.Core.csproj", "{E1D9A19E-5317-4C32-A78F-117452DB9B29}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimMetryx.TelemetrySniff.Core", "src\SimMetryx.TelemetrySniff.Core\SimMetryx.TelemetrySniff.Core.csproj", "{E1D9A19E-5317-4C32-A78F-117452DB9B29}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimMetrics.TelemetrySniff.Cli", "src\SimMetrics.TelemetrySniff.Cli\SimMetrics.TelemetrySniff.Cli.csproj", "{DEFD89B5-2648-4CD8-9DB2-FFA7F3C0D238}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimMetryx.TelemetrySniff.Cli", "src\SimMetryx.TelemetrySniff.Cli\SimMetryx.TelemetrySniff.Cli.csproj", "{DEFD89B5-2648-4CD8-9DB2-FFA7F3C0D238}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{A8D22AE0-1C73-41FD-9C28-D0E09B346B2E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimMetrics.TelemetrySniff.Tests", "tests\SimMetrics.TelemetrySniff.Tests\SimMetrics.TelemetrySniff.Tests.csproj", "{E2BC3DF8-F0D9-447A-9142-BBF7C2696FB2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimMetryx.TelemetrySniff.Tests", "tests\SimMetryx.TelemetrySniff.Tests\SimMetryx.TelemetrySniff.Tests.csproj", "{E2BC3DF8-F0D9-447A-9142-BBF7C2696FB2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -3,11 +3,11 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using SimMetrics.TelemetrySniff.Core.AssettoCorsa;
-using SimMetrics.TelemetrySniff.Core.Models;
-using SimMetrics.TelemetrySniff.Core.Storage;
+using SimMetryx.TelemetrySniff.Core.AssettoCorsa;
+using SimMetryx.TelemetrySniff.Core.Models;
+using SimMetryx.TelemetrySniff.Core.Storage;
 
-namespace SimMetrics.TelemetrySniff.Cli
+namespace SimMetryx.TelemetrySniff.Cli
 {
     internal class Program
     {
@@ -24,7 +24,7 @@ namespace SimMetrics.TelemetrySniff.Cli
 
         static async Task Main(string[] args)
         {
-            Console.Title = "SimMetrics Telemetry Sniffer - Assetto Corsa UDP Listener";
+            Console.Title = "SimMetryx Telemetry Observer - Assetto Corsa UDP Listener";
             Console.OutputEncoding = System.Text.Encoding.UTF8;
 
             string mode = "active"; // active, passive, demo
@@ -195,7 +195,7 @@ namespace SimMetrics.TelemetrySniff.Cli
             var line = new string('=', 78);
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine(line);
-            Console.WriteLine(" 🏎️  SIMMETRICS TELEMETRY SNIFFER  |  Assetto Corsa UDP Engine");
+            Console.WriteLine(" 🏎️  SIMMETRYX TELEMETRY OBSERVER  |  Assetto Corsa UDP Engine");
             Console.WriteLine(line);
             Console.ResetColor();
 
@@ -357,10 +357,10 @@ namespace SimMetrics.TelemetrySniff.Cli
         private static void PrintHelp()
         {
             Console.WriteLine(@"
-SimMetrics Telemetry Sniffer - Assetto Corsa UDP Engine
+SimMetryx Telemetry Observer - Assetto Corsa UDP Engine
 
 Usage:
-  SimMetrics.TelemetrySniff.Cli [options]
+  SimMetryx.TelemetrySniff.Cli [options]
 
 Options:
   --mode <active|passive|demo>  Operation mode:

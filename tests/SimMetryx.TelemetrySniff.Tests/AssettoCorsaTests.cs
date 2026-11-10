@@ -2,12 +2,12 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading;
-using SimMetrics.TelemetrySniff.Core.AssettoCorsa;
-using SimMetrics.TelemetrySniff.Core.Models;
-using SimMetrics.TelemetrySniff.Core.Storage;
+using SimMetryx.TelemetrySniff.Core.AssettoCorsa;
+using SimMetryx.TelemetrySniff.Core.Models;
+using SimMetryx.TelemetrySniff.Core.Storage;
 using Xunit;
 
-namespace SimMetrics.TelemetrySniff.Tests
+namespace SimMetryx.TelemetrySniff.Tests
 {
     public class AssettoCorsaTests
     {
@@ -90,7 +90,7 @@ namespace SimMetrics.TelemetrySniff.Tests
         [Fact]
         public void TelemetrySessionWriter_CreatesJsonlAndCatalog()
         {
-            var tempDir = Path.Combine(Path.GetTempPath(), "SimMetrics_Test_" + Guid.NewGuid().ToString("N"));
+            var tempDir = Path.Combine(Path.GetTempPath(), "SimMetryx_Test_" + Guid.NewGuid().ToString("N"));
             try
             {
                 using var writer = new TelemetrySessionWriter(tempDir);

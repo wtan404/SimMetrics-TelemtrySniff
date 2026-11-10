@@ -2,7 +2,7 @@ using System;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace SimMetrics.TelemetrySniff.Core.Models
+namespace SimMetryx.TelemetrySniff.Core.Models
 {
     /// <summary>
     /// High-level session metadata and performance metrics summary designed

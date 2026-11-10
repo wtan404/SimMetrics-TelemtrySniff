@@ -1,6 +1,35 @@
 # Changelog
 
-All notable updates and project changes to `SimMetrics-TelemtrySniff` are documented in this file.
+All notable updates and project changes to `SimMetryx-TelemetrySniff` are documented in this file.
+
+## [2026-11-10] - SimMetryx Observer SimHub Discovery Resolution & Global SimMetryx Rebranding
+
+### Fixed
+- **SimHub Plugin Discovery & Reflection Loading (`SimMetryxObserver.dll` / `simmetryxObserver.dll`)**:
+  - Resolved root cause of SimHub failing to detect the observer plugin: the assembly was previously compiling against internal stubs due to a generic type mismatch on SimHub's `GameReaderCommon.dll`.
+  - Re-bound project references directly against real SimHub assemblies (`D:\Program Files\SimHub\SimHub.Plugins.dll`, `GameReaderCommon.dll`, `SimHub.Logging.dll`, `log4net.dll`, `MahApps.Metro.dll`).
+  - Corrected `SniffEngine.cs` telemetry consumption signatures: updated `PopulateNormalizedData` to consume `GameReaderCommon.StatusDataBase`, mapped `data.NewData.SessionTypeName`, resolved nullable vector accelerations (`?? 0.0`), and handled non-nullable `TimeSpan` lap time validations.
+  - Implemented `IWPFSettingsV2` on `TelemetrySniffPlugin` with public `PluginManager` setter and registered left-sidebar menu title `LeftMenuTitle => "SimMetryx Observer"`.
+  - Verified via live CLR reflection that `SimMetryxObserver.dll` exports `IPlugin = True`, `IWPFSettingsV2 = True`, and successfully instantiates within SimHub's runtime engine.
+
+### Changed
+- **Comprehensive Platform Rebranding (`SimMetryx` Casingwise)**:
+  - Enforced strict `SimMetryx` casing and zero tolerance for legacy `SimMetrics` naming across the entire codebase, project files, solutions, namespaces, and documentation.
+  - Renamed projects and solution:
+    - Solution: `SimMetryx-TelemetrySniff.sln`
+    - Main Plugin: `src/SimMetryx.TelemetrySniff.csproj` (Assembly: `SimMetryxObserver.dll`)
+    - Core Engine: `src/SimMetryx.TelemetrySniff.Core/SimMetryx.TelemetrySniff.Core.csproj`
+    - Standalone CLI: `src/SimMetryx.TelemetrySniff.Cli/SimMetryx.TelemetrySniff.Cli.csproj`
+    - Unit Tests: `tests/SimMetryx.TelemetrySniff.Tests/SimMetryx.TelemetrySniff.Tests.csproj`
+  - Renamed all C# namespaces from `SimMetrics.TelemetrySniff.*` to `SimMetryx.TelemetrySniff.*`.
+  - Relocated default telemetry artifact directory from `Documents/SimMetrics/TelemetrySniff` to `Documents/SimMetryx/TelemetrySniff`.
+  - Rebranded ANSI terminal HUD, banners, and help screens in `Program.cs` to `SimMetryx Telemetry Observer`.
+  - Retargeted plugin project strictly to `<TargetFramework>net48</TargetFramework>` to eliminate CLR version mismatch against SimHub's .NET Framework host.
+
+### Verified & Deployed
+- **Local Unit Test Suite**: All 6 tests in `SimMetryx.TelemetrySniff.Tests` passed (100% pass rate).
+- **SimHub Production Directory**: Fresh build of `SimMetryxObserver.dll` (78,848 bytes) deployed directly to `D:\Program Files\SimHub\simmetryxObserver.dll` and `SimMetryxObserver.dll`.
+- **Integrity**: Verified `spedbot` and `SimMetryxRacebot` remain untouched and functional.
 
 ## [2026-11-09] - Single-Assembly Plugin Consolidation & Zero-Dependency SimHub Build
 

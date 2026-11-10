@@ -3,9 +3,9 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using SimMetrics.TelemetrySniff.Core.Models;
+using SimMetryx.TelemetrySniff.Core.Models;
 
-namespace SimMetrics.TelemetrySniff.Core.AssettoCorsa
+namespace SimMetryx.TelemetrySniff.Core.AssettoCorsa
 {
     /// <summary>
     /// Passive UDP socket listener that binds to a port and intercepts

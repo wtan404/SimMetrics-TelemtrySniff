@@ -5,12 +5,12 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
-    <RootNamespace>SimMetrics.TelemetrySniff.Cli</RootNamespace>
-    <AssemblyName>SimMetrics.TelemetrySniff.Cli</AssemblyName>
+    <RootNamespace>SimMetryx.TelemetrySniff.Cli</RootNamespace>
+    <AssemblyName>SimMetryx.TelemetrySniff.Cli</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SimMetrics.TelemetrySniff.Core\SimMetrics.TelemetrySniff.Core.csproj" />
+    <ProjectReference Include="..\SimMetryx.TelemetrySniff.Core\SimMetryx.TelemetrySniff.Core.csproj" />
   </ItemGroup>
 
 </Project>

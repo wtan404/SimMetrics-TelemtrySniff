@@ -9,10 +9,10 @@ using System.Threading.Tasks;
 using GameReaderCommon;
 using Newtonsoft.Json;
 using SimHub.Plugins;
-using SimMetrics.TelemetrySniff.Models;
-using SessionSummary = SimMetrics.TelemetrySniff.Core.Models.SessionSummary;
+using SimMetryx.TelemetrySniff.Models;
+using SessionSummary = SimMetryx.TelemetrySniff.Core.Models.SessionSummary;
 
-namespace SimMetrics.TelemetrySniff
+namespace SimMetryx.TelemetrySniff
 {
     /// <summary>
     /// Telemetry capture engine that samples normalized SimHub data, game raw buffers,
@@ -44,9 +44,9 @@ namespace SimMetrics.TelemetrySniff
 
         public SniffEngine()
         {
-            // Default output directory in Documents\SimMetrics
+            // Default output directory in Documents\SimMetryx
             var docs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            OutputDirectory = Path.Combine(docs, "SimMetrics", "TelemetrySniff");
+            OutputDirectory = Path.Combine(docs, "SimMetryx", "TelemetrySniff");
         }
 
         public void StartCapture(string gameName)
@@ -125,7 +125,7 @@ namespace SimMetrics.TelemetrySniff
                 GameName = pluginManager.GameName ?? "Unknown",
                 GameRunning = data.GameRunning,
                 GamePaused = data.GamePaused,
-                SessionType = data.SessionTypeName,
+                SessionType = data.NewData?.SessionTypeName ?? "Unknown",
                 CarModel = data.NewData.CarModel,
                 TrackCode = data.NewData.TrackCode
             };
@@ -161,8 +161,8 @@ namespace SimMetrics.TelemetrySniff
             // Update session performance envelope for AI summary
             if (CurrentSessionSummary != null)
             {
-                if (CurrentSessionSummary.SessionType == "Unknown" && !string.IsNullOrEmpty(data.SessionTypeName))
-                    CurrentSessionSummary.SessionType = data.SessionTypeName;
+                if (CurrentSessionSummary.SessionType == "Unknown" && !string.IsNullOrEmpty(data.NewData?.SessionTypeName))
+                    CurrentSessionSummary.SessionType = data.NewData.SessionTypeName;
 
                 if (CurrentSessionSummary.CarModel == "Unknown" && !string.IsNullOrEmpty(data.NewData.CarModel))
                     CurrentSessionSummary.CarModel = data.NewData.CarModel;
@@ -179,10 +179,10 @@ namespace SimMetrics.TelemetrySniff
                 if (data.NewData.CompletedLaps > CurrentSessionSummary.CompletedLaps)
                     CurrentSessionSummary.CompletedLaps = data.NewData.CompletedLaps;
 
-                if (data.NewData.BestLapTime.HasValue)
+                if (data.NewData.BestLapTime > TimeSpan.Zero)
                     CurrentSessionSummary.BestLapTime = data.NewData.BestLapTime;
 
-                if (data.NewData.LastLapTime.HasValue)
+                if (data.NewData.LastLapTime > TimeSpan.Zero)
                     CurrentSessionSummary.LastLapTime = data.NewData.LastLapTime;
 
                 if (CurrentSessionSummary.FuelStart <= 0 && data.NewData.Fuel > 0)
@@ -207,7 +207,7 @@ namespace SimMetrics.TelemetrySniff
             }
         }
 
-        private void PopulateNormalizedData(NormalizedData target, StatusData src)
+        private void PopulateNormalizedData(NormalizedData target, StatusDataBase src)
         {
             target.SpeedKmh = src.SpeedKmh;
             target.Rpms = src.Rpms;
@@ -216,15 +216,15 @@ namespace SimMetrics.TelemetrySniff
             target.Throttle = src.Throttle;
             target.Brake = src.Brake;
             target.Clutch = src.Clutch;
-            target.SteeringAngle = src.SteeringAngle;
+            target.SteeringAngle = 0.0;
 
             target.Pitch = src.OrientationPitch;
             target.Roll = src.OrientationRoll;
             target.Yaw = src.OrientationYaw;
 
-            target.AccelerationSurge = src.AccelerationSurge;
-            target.AccelerationSway = src.AccelerationSway;
-            target.AccelerationHeave = src.AccelerationHeave;
+            target.AccelerationSurge = src.AccelerationSurge ?? 0.0;
+            target.AccelerationSway = src.AccelerationSway ?? 0.0;
+            target.AccelerationHeave = src.AccelerationHeave ?? 0.0;
 
             target.CompletedLaps = src.CompletedLaps;
             target.CurrentLapTime = src.CurrentLapTime;
