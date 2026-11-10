@@ -131,7 +131,18 @@ namespace SimMetryx.TelemetrySniff
         /// </summary>
         public Control GetWPFSettingsControl(PluginManager pluginManager)
         {
-            return _settingsControl ??= new SniffPluginUI(this);
+            try
+            {
+                return _settingsControl ??= new SniffPluginUI(this);
+            }
+            catch (Exception ex)
+            {
+                SimHub.Logging.Current.Error($"Failed to initialize SimMetryx Observer UI: {ex}");
+                return new ContentControl
+                {
+                    Content = new TextBlock { Text = $"SimMetryx Observer UI Error: {ex.Message}", Margin = new System.Windows.Thickness(20) }
+                };
+            }
         }
 
         public ImageSource? PictureIcon => null;

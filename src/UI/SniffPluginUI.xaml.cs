@@ -12,6 +12,7 @@ namespace SimMetryx.TelemetrySniff.UI
     {
         private readonly TelemetrySniffPlugin _plugin;
         private readonly DispatcherTimer _uiTimer;
+        private bool _isInitialized = false;
 
         public SniffPluginUI(TelemetrySniffPlugin plugin)
         {
@@ -20,6 +21,7 @@ namespace SimMetryx.TelemetrySniff.UI
 
             TxtOutputDir.Text = _plugin.Engine.OutputDirectory;
             SliderHz.Value = _plugin.Engine.TargetHz;
+            _isInitialized = true;
 
             // Timer for UI status refresh at 4 Hz
             _uiTimer = new DispatcherTimer
@@ -101,7 +103,7 @@ namespace SimMetryx.TelemetrySniff.UI
 
         private void SliderHz_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if (TxtHz == null) return;
+            if (!_isInitialized || TxtHz == null) return;
             var hz = (int)e.NewValue;
             TxtHz.Text = $"{hz} Hz";
             if (_plugin?.Engine != null)
@@ -112,9 +114,11 @@ namespace SimMetryx.TelemetrySniff.UI
 
         private void ChkConfig_Changed(object sender, RoutedEventArgs e)
         {
-            if (_plugin?.Engine == null) return;
-            _plugin.Engine.CaptureRawPayload = ChkRawPayload.IsChecked == true;
-            _plugin.Engine.CaptureAllProperties = ChkDynamicProps.IsChecked == true;
+            if (!_isInitialized || _plugin?.Engine == null) return;
+            if (ChkRawPayload != null)
+                _plugin.Engine.CaptureRawPayload = ChkRawPayload.IsChecked == true;
+            if (ChkDynamicProps != null)
+                _plugin.Engine.CaptureAllProperties = ChkDynamicProps.IsChecked == true;
         }
 
         private void BtnOpenFolder_Click(object sender, RoutedEventArgs e)

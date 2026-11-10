@@ -5,6 +5,9 @@ All notable updates and project changes to `SimMetryx-TelemetrySniff` are docume
 ## [2026-11-10] - SimMetryx Observer SimHub Discovery Resolution & Global SimMetryx Rebranding
 
 ### Fixed
+- **SimHub Settings UI Crash on Plugin Activation**:
+  - Resolved `NullReferenceException` in `SniffPluginUI.ChkConfig_Changed`: added `_isInitialized` lifecycle guard in `SniffPluginUI.xaml.cs` to prevent early-firing `Checked` event during BAML parsing before child controls are instantiated.
+  - Wrapped `TelemetrySniffPlugin.GetWPFSettingsControl` in an exception boundary with graceful fallback, preventing SimHub host failure.
 - **SimHub Plugin Discovery & Reflection Loading (`SimMetryxObserver.dll` / `simmetryxObserver.dll`)**:
   - Resolved root cause of SimHub failing to detect the observer plugin: the assembly was previously compiling against internal stubs due to a generic type mismatch on SimHub's `GameReaderCommon.dll`.
   - Re-bound project references directly against real SimHub assemblies (`D:\Program Files\SimHub\SimHub.Plugins.dll`, `GameReaderCommon.dll`, `SimHub.Logging.dll`, `log4net.dll`, `MahApps.Metro.dll`).
