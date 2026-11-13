@@ -2,6 +2,36 @@
 
 All notable updates and project changes to `SimMetryx-TelemetrySniff` are documented in this file.
 
+## [2026-11-12] - Operating Control Panel Master Toggle, Configurable Log Storage, and Simulator-State Raw Sniffer Engine
+
+### Added
+- **Operating Control Panel Master On/Off Switch (`SniffPluginUI.xaml` / `SniffPluginUI.xaml.cs`)**:
+  - Implemented dedicated Master Power Switch directly within the plugin's operating control panel header (`BtnMasterPower`), allowing users to silence or engage observer functionality on demand without toggling SimHub's global plugin activation list.
+  - Added visual cues with dynamic state badges: `🟢 OBSERVER: ACTIVE` vs `⏸️ OBSERVER: DISABLED`.
+  - Registered SimHub property `IsEnabled` and bindable action `ToggleMasterPower`.
+  - When disabled, `DataUpdate` immediately short-circuits, halts any active capture session cleanly, and sets status indicator to `⏸️ DISABLED: Observer Off (Control Panel)`.
+- **Configurable Log Folder Location & Native Directory Browser**:
+  - Updated default logging directory from `Documents\SimMetryx\TelemetrySniff` to `D:\Projects\SimMetrics-TelemtrySniff\logs`.
+  - Unlocked `TxtOutputDir` into an editable TextBox with auto-directory validation on `LostFocus` and `Enter` keydown.
+  - Added `Browse...` button (`BtnBrowseFolder`) leveraging native `System.Windows.Forms.FolderBrowserDialog` alongside the `Open Folder` explorer button.
+  - Added dedicated file open/explorer buttons for the latest raw capture stream (`.jsonl`) and channel schema catalog (`.catalog.json`).
+- **Persistent Observer Configuration (`SimMetryxObserver.settings.json`)**:
+  - Added JSON configuration persistence located in `%LOCALAPPDATA%\SimMetryx\SimMetryxObserver.settings.json` saving `IsEnabled`, `OutputDirectory`, `TargetHz`, `CaptureRawPayload`, and `CaptureAllProperties` across SimHub restarts.
+- **Lightweight Capture Manifest (`CaptureManifest.cs`) & Unit Tests**:
+  - Added `CaptureManifest.cs` model in `SimMetryx.TelemetrySniff.Core.Models` and unit test suite `CaptureManifestTests.cs` (100% pass rate).
+
+### Changed
+- **Pivoted Scope from Session Reporting to Pure Raw Data Sniffing for RaceBot**:
+  - Stripped out session performance reporting, tyre temperature min/max calculations, fuel delta calculations, and `.summary.md` race envelopes from the capture loop.
+  - Refocused capture engine strictly on high-fidelity raw packet collection (`.jsonl`), dynamic property catalog extraction (`.catalog.json`), and raw memory buffer capture to discover simulator variables and triggers for `SimMetrics-RaceBot`.
+- **Decoupled Game Detection from SimHub Dashboard Profile & Introduced "Armed" State**:
+  - Resolved premature recording bug where clicking Start Observer while idling bound to whatever game was selected on SimHub's dashboard.
+  - Capture engine now strictly tracks physical simulator process execution via `data.GameRunning`.
+  - Added 4-stage state machine (`Disabled`, `Standby`, `Armed`, `Capturing`):
+    - Clicking the observer action while in standby transitions to `🟡 ARMED (WAITING FOR SIM)` without creating empty log files.
+    - When the simulator launches, the engine auto-detects the active game and begins recording raw telemetry.
+    - When the simulator process terminates, the capture session is automatically stopped, flushed, and closed.
+
 ## [2026-11-10] - SimMetryx Observer SimHub Discovery Resolution & Global SimMetryx Rebranding
 
 ### Fixed

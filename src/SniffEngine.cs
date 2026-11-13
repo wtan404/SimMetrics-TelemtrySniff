@@ -10,13 +10,30 @@ using GameReaderCommon;
 using Newtonsoft.Json;
 using SimHub.Plugins;
 using SimMetryx.TelemetrySniff.Models;
-using SessionSummary = SimMetryx.TelemetrySniff.Core.Models.SessionSummary;
+using CaptureManifest = SimMetryx.TelemetrySniff.Core.Models.CaptureManifest;
 
 namespace SimMetryx.TelemetrySniff
 {
+    public enum SnifferState
+    {
+        Disabled,
+        Standby,
+        Armed,
+        Capturing
+    }
+
+    public class SniffSettings
+    {
+        public bool IsEnabled { get; set; } = true;
+        public string OutputDirectory { get; set; } = @"D:\Projects\SimMetrics-TelemtrySniff\logs";
+        public int TargetHz { get; set; } = 30;
+        public bool CaptureRawPayload { get; set; } = true;
+        public bool CaptureAllProperties { get; set; } = true;
+    }
+
     /// <summary>
-    /// Telemetry capture engine that samples normalized SimHub data, game raw buffers,
-    /// and dynamic property catalogs without blocking the main game telemetry thread.
+    /// High-throughput telemetry capture engine designed strictly for raw packet collection,
+    /// dynamic property discovery, and hardware buffer sniffing for RaceBot reverse engineering.
     /// </summary>
     public class SniffEngine : IDisposable
     {
@@ -26,36 +43,151 @@ namespace SimMetryx.TelemetrySniff
         private StreamWriter? _currentWriter;
         private DateTime _lastSampleTime = DateTime.MinValue;
 
-        // Statistics
+        // Runtime State
+        private bool _isEnabled = true;
+        public bool IsEnabled
+        {
+            get => _isEnabled;
+            set
+            {
+                if (_isEnabled == value) return;
+                _isEnabled = value;
+                if (!_isEnabled)
+                {
+                    IsArmed = false;
+                    if (IsCapturing)
+                    {
+                        StopCapture(null);
+                    }
+                }
+                SaveSettings();
+            }
+        }
+
+        public bool IsArmed { get; private set; }
+        public bool IsCapturing { get; private set; }
+
+        public SnifferState State
+        {
+            get
+            {
+                if (!IsEnabled) return SnifferState.Disabled;
+                if (IsCapturing) return SnifferState.Capturing;
+                if (IsArmed) return SnifferState.Armed;
+                return SnifferState.Standby;
+            }
+        }
+
+        // Configuration Settings
+        private int _targetHz = 30;
+        public int TargetHz
+        {
+            get => _targetHz;
+            set { _targetHz = value; SaveSettings(); }
+        }
+
+        private bool _captureRawPayload = true;
+        public bool CaptureRawPayload
+        {
+            get => _captureRawPayload;
+            set { _captureRawPayload = value; SaveSettings(); }
+        }
+
+        private bool _captureAllProperties = true;
+        public bool CaptureAllProperties
+        {
+            get => _captureAllProperties;
+            set { _captureAllProperties = value; SaveSettings(); }
+        }
+
+        private string _outputDirectory = @"D:\Projects\SimMetrics-TelemtrySniff\logs";
+        public string OutputDirectory
+        {
+            get => _outputDirectory;
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value)) return;
+                _outputDirectory = value;
+                SaveSettings();
+            }
+        }
+
+        // Capture Statistics & File Pointers
         public long FramesCaptured { get; private set; }
-        public double CurrentHz { get; private set; }
         public int DiscoveredPropertyCount { get; private set; }
         public string? CurrentSessionFile { get; private set; }
-        public string? LastSummaryMarkdownFile { get; private set; }
-        public string? LastSummaryJsonFile { get; private set; }
-        public SessionSummary? CurrentSessionSummary { get; private set; }
+        public string? LastCatalogFile { get; private set; }
+        public string? LastManifestFile { get; private set; }
+        public CaptureManifest? CurrentManifest { get; private set; }
 
-        // Settings
-        public bool IsCapturing { get; private set; }
-        public int TargetHz { get; set; } = 30; // 1 to 60 Hz
-        public bool CaptureRawPayload { get; set; } = true;
-        public bool CaptureAllProperties { get; set; } = true;
-        public string OutputDirectory { get; set; }
+        // Backwards compatibility pointer
+        public string? LastSummaryMarkdownFile => LastManifestFile;
 
         public SniffEngine()
         {
-            // Default output directory in Documents\SimMetryx
-            var docs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            OutputDirectory = Path.Combine(docs, "SimMetryx", "TelemetrySniff");
+            LoadSettings();
         }
 
-        public void StartCapture(string gameName)
+        public void ArmCapture()
         {
-            if (IsCapturing) return;
+            if (!IsEnabled || IsCapturing) return;
+            IsArmed = true;
+        }
 
-            Directory.CreateDirectory(OutputDirectory);
-            var safeGame = string.IsNullOrWhiteSpace(gameName) ? "UnknownSim" : SanitizeFilename(gameName);
-            var filename = $"sniff_{safeGame}_{DateTime.UtcNow:yyyyMMdd_HHmmss}.jsonl";
+        public void DisarmCapture()
+        {
+            IsArmed = false;
+        }
+
+        public void ToggleArmOrCapture(bool isGameRunning, string? gameName, PluginManager? pluginManager)
+        {
+            if (!IsEnabled) return;
+
+            if (IsCapturing)
+            {
+                StopCapture(pluginManager);
+                IsArmed = false;
+            }
+            else if (IsArmed)
+            {
+                IsArmed = false;
+            }
+            else
+            {
+                if (isGameRunning)
+                {
+                    var safeGame = string.IsNullOrWhiteSpace(gameName) || gameName == "None" ? "Simulator" : gameName!;
+                    StartCapture(safeGame);
+                }
+                else
+                {
+                    ArmCapture();
+                }
+            }
+        }
+
+        public void StartCapture(string gameName, string? sessionType = null, string? car = null, string? track = null)
+        {
+            if (!IsEnabled || IsCapturing) return;
+
+            try
+            {
+                if (!Directory.Exists(OutputDirectory))
+                {
+                    Directory.CreateDirectory(OutputDirectory);
+                }
+            }
+            catch (Exception)
+            {
+                // Fallback to Documents if configured path is inaccessible
+                var docs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                OutputDirectory = Path.Combine(docs, "SimMetryx", "TelemetrySniff");
+                Directory.CreateDirectory(OutputDirectory);
+            }
+
+            var safeGame = string.IsNullOrWhiteSpace(gameName) || gameName == "None" ? "Simulator" : SanitizeFilename(gameName);
+            var timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss");
+            var filename = $"sniff_{safeGame}_{timestamp}.jsonl";
             CurrentSessionFile = Path.Combine(OutputDirectory, filename);
 
             _currentWriter = new StreamWriter(new FileStream(CurrentSessionFile, FileMode.Create, FileAccess.Write, FileShare.Read))
@@ -67,19 +199,23 @@ namespace SimMetryx.TelemetrySniff
             _writerTask = Task.Run(() => ProcessWriteQueue(_cts.Token));
             FramesCaptured = 0;
             IsCapturing = true;
+            IsArmed = false;
 
-            CurrentSessionSummary = new SessionSummary
+            CurrentManifest = new CaptureManifest
             {
                 GameName = safeGame,
+                SessionType = sessionType ?? "Unknown",
+                Vehicle = car ?? "Unknown",
+                Track = track ?? "Unknown",
                 StartTimeUtc = DateTime.UtcNow,
                 TargetHz = TargetHz,
-                RawDataCaptured = CaptureRawPayload,
-                MinTyreTempC = 999.0,
-                MaxTyreTempC = 0.0
+                RawBufferCaptured = CaptureRawPayload,
+                DynamicPropertiesCaptured = CaptureAllProperties,
+                JsonlFilePath = CurrentSessionFile
             };
         }
 
-        public void StopCapture(PluginManager pluginManager)
+        public void StopCapture(PluginManager? pluginManager)
         {
             if (!IsCapturing) return;
 
@@ -92,23 +228,58 @@ namespace SimMetryx.TelemetrySniff
             }
             catch (Exception) { /* ignored */ }
 
-            _currentWriter?.Flush();
-            _currentWriter?.Dispose();
+            try
+            {
+                _currentWriter?.Flush();
+                _currentWriter?.Dispose();
+            }
+            catch (Exception) { /* ignored */ }
             _currentWriter = null;
 
-            // Generate schema catalog and AI-readable session summary alongside the recording
             if (CurrentSessionFile != null)
             {
-                ExportSchemaCatalog(pluginManager, CurrentSessionFile);
-                ExportSessionSummary(CurrentSessionFile);
+                if (pluginManager != null && CaptureAllProperties)
+                {
+                    ExportSchemaCatalog(pluginManager, CurrentSessionFile);
+                }
+
+                ExportManifest(CurrentSessionFile);
             }
         }
 
         /// <summary>
-        /// Invoked every tick from SimHub's DataUpdate hook.
+        /// Invoked every frame from SimHub's DataUpdate lifecycle.
         /// </summary>
         public void ProcessFrame(PluginManager pluginManager, ref GameData data)
         {
+            if (!IsEnabled) return;
+
+            var isRunning = data?.GameRunning ?? false;
+
+            // Handle Simulator Startup while Armed
+            if (isRunning && IsArmed && !IsCapturing)
+            {
+                var activeGame = pluginManager.GameName;
+                if (string.IsNullOrWhiteSpace(activeGame) || activeGame == "None")
+                {
+                    activeGame = "Simulator";
+                }
+
+                var sessionType = data?.NewData?.SessionTypeName;
+                var car = data?.NewData?.CarModel;
+                var track = data?.NewData?.TrackCode;
+
+                StartCapture(activeGame, sessionType, car, track);
+            }
+
+            // Handle Simulator Exit while Recording
+            if (!isRunning && IsCapturing)
+            {
+                StopCapture(pluginManager);
+                return;
+            }
+
+            // Throttled frame capture
             if (!IsCapturing || data?.NewData == null) return;
 
             var now = DateTime.UtcNow;
@@ -158,52 +329,17 @@ namespace SimMetryx.TelemetrySniff
                 FramesCaptured++;
             }
 
-            // Update session performance envelope for AI summary
-            if (CurrentSessionSummary != null)
+            // Keep manifest session info up to date
+            if (CurrentManifest != null)
             {
-                if (CurrentSessionSummary.SessionType == "Unknown" && !string.IsNullOrEmpty(data.NewData?.SessionTypeName))
-                    CurrentSessionSummary.SessionType = data.NewData.SessionTypeName;
+                if (CurrentManifest.SessionType == "Unknown" && !string.IsNullOrEmpty(data.NewData?.SessionTypeName))
+                    CurrentManifest.SessionType = data.NewData.SessionTypeName;
 
-                if (CurrentSessionSummary.CarModel == "Unknown" && !string.IsNullOrEmpty(data.NewData.CarModel))
-                    CurrentSessionSummary.CarModel = data.NewData.CarModel;
+                if (CurrentManifest.Vehicle == "Unknown" && !string.IsNullOrEmpty(data.NewData.CarModel))
+                    CurrentManifest.Vehicle = data.NewData.CarModel;
 
-                if (CurrentSessionSummary.TrackCode == "Unknown" && !string.IsNullOrEmpty(data.NewData.TrackCode))
-                    CurrentSessionSummary.TrackCode = data.NewData.TrackCode;
-
-                if (data.NewData.SpeedKmh > CurrentSessionSummary.TopSpeedKmh)
-                    CurrentSessionSummary.TopSpeedKmh = data.NewData.SpeedKmh;
-
-                if (data.NewData.Rpms > CurrentSessionSummary.MaxRpm)
-                    CurrentSessionSummary.MaxRpm = data.NewData.Rpms;
-
-                if (data.NewData.CompletedLaps > CurrentSessionSummary.CompletedLaps)
-                    CurrentSessionSummary.CompletedLaps = data.NewData.CompletedLaps;
-
-                if (data.NewData.BestLapTime > TimeSpan.Zero)
-                    CurrentSessionSummary.BestLapTime = data.NewData.BestLapTime;
-
-                if (data.NewData.LastLapTime > TimeSpan.Zero)
-                    CurrentSessionSummary.LastLapTime = data.NewData.LastLapTime;
-
-                if (CurrentSessionSummary.FuelStart <= 0 && data.NewData.Fuel > 0)
-                    CurrentSessionSummary.FuelStart = data.NewData.Fuel;
-                CurrentSessionSummary.FuelEnd = data.NewData.Fuel;
-
-                var tyres = new[]
-                {
-                    data.NewData.TyreTemperatureFrontLeft,
-                    data.NewData.TyreTemperatureFrontRight,
-                    data.NewData.TyreTemperatureRearLeft,
-                    data.NewData.TyreTemperatureRearRight
-                };
-                foreach (var t in tyres)
-                {
-                    if (t > 0)
-                    {
-                        if (t < CurrentSessionSummary.MinTyreTempC) CurrentSessionSummary.MinTyreTempC = t;
-                        if (t > CurrentSessionSummary.MaxTyreTempC) CurrentSessionSummary.MaxTyreTempC = t;
-                    }
-                }
+                if (CurrentManifest.Track == "Unknown" && !string.IsNullOrEmpty(data.NewData.TrackCode))
+                    CurrentManifest.Track = data.NewData.TrackCode;
             }
         }
 
@@ -267,12 +403,10 @@ namespace SimMetryx.TelemetrySniff
 
             try
             {
-                // Reflect on PluginManager.GetAllProperties() or internal PropertyList
                 var method = pluginManager.GetType().GetMethod("GetAllProperties", BindingFlags.Public | BindingFlags.Instance);
                 if (method != null)
                 {
-                    var props = method.Invoke(pluginManager, null) as IEnumerable<string>;
-                    if (props != null)
+                    if (method.Invoke(pluginManager, null) is IEnumerable<string> props)
                     {
                         foreach (var prop in props)
                         {
@@ -282,7 +416,6 @@ namespace SimMetryx.TelemetrySniff
                 }
                 else
                 {
-                    // Fallback to internal properties field if GetAllProperties is private or renamed
                     var field = pluginManager.GetType().GetField("properties", BindingFlags.NonPublic | BindingFlags.Instance);
                     if (field?.GetValue(pluginManager) is IDictionary<string, object> rawMap)
                     {
@@ -295,7 +428,7 @@ namespace SimMetryx.TelemetrySniff
             }
             catch (Exception)
             {
-                // Graceful fallback to avoid interrupting telemetry loop
+                // Graceful fallback
             }
 
             DiscoveredPropertyCount = dict.Count;
@@ -318,36 +451,27 @@ namespace SimMetryx.TelemetrySniff
 
                 var json = JsonConvert.SerializeObject(descriptors, Formatting.Indented);
                 File.WriteAllText(catalogPath, json);
+                LastCatalogFile = catalogPath;
             }
             catch (Exception) { /* schema dump best-effort */ }
         }
 
-        private void ExportSessionSummary(string sessionJsonlPath)
+        private void ExportManifest(string sessionJsonlPath)
         {
-            if (CurrentSessionSummary == null) return;
+            if (CurrentManifest == null) return;
 
             try
             {
-                CurrentSessionSummary.EndTimeUtc = DateTime.UtcNow;
-                CurrentSessionSummary.TotalFrames = FramesCaptured;
-                CurrentSessionSummary.DiscoveredChannelsCount = DiscoveredPropertyCount;
-                CurrentSessionSummary.JsonlFilePath = sessionJsonlPath;
-                CurrentSessionSummary.CatalogFilePath = Path.ChangeExtension(sessionJsonlPath, ".catalog.json");
-                if (CurrentSessionSummary.MinTyreTempC >= 999.0)
-                {
-                    CurrentSessionSummary.MinTyreTempC = 0.0;
-                }
+                CurrentManifest.EndTimeUtc = DateTime.UtcNow;
+                CurrentManifest.TotalFramesCaptured = FramesCaptured;
+                CurrentManifest.DiscoveredPropertiesCount = DiscoveredPropertyCount;
+                CurrentManifest.JsonlFilePath = sessionJsonlPath;
+                CurrentManifest.CatalogFilePath = Path.ChangeExtension(sessionJsonlPath, ".catalog.json");
 
-                LastSummaryMarkdownFile = Path.ChangeExtension(sessionJsonlPath, ".summary.md");
-                LastSummaryJsonFile = Path.ChangeExtension(sessionJsonlPath, ".summary.json");
-
-                File.WriteAllText(LastSummaryMarkdownFile, CurrentSessionSummary.ToMarkdown());
-                File.WriteAllText(LastSummaryJsonFile, CurrentSessionSummary.ToJson(indented: true));
+                LastManifestFile = Path.ChangeExtension(sessionJsonlPath, ".manifest.json");
+                File.WriteAllText(LastManifestFile, CurrentManifest.ToJson(indented: true));
             }
-            catch (Exception)
-            {
-                // Best-effort export to prevent capture loop exceptions
-            }
+            catch (Exception) { /* best effort */ }
         }
 
         private void ProcessWriteQueue(CancellationToken token)
@@ -380,13 +504,87 @@ namespace SimMetryx.TelemetrySniff
                 }
             }
 
-            _currentWriter?.Flush();
+            try { _currentWriter?.Flush(); } catch { }
         }
 
         private static string SanitizeFilename(string name)
         {
             var invalids = Path.GetInvalidFileNameChars();
             return string.Concat(name.Select(c => invalids.Contains(c) ? '_' : c));
+        }
+
+        private static string GetSettingsFilePath()
+        {
+            var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "SimMetryx");
+            return Path.Combine(folder, "SimMetryxObserver.settings.json");
+        }
+
+        private void LoadSettings()
+        {
+            // Default directory logic
+            var defaultLogs = @"D:\Projects\SimMetrics-TelemtrySniff\logs";
+            if (Directory.Exists(@"D:\Projects") || Directory.Exists(Path.GetPathRoot(defaultLogs) ?? string.Empty))
+            {
+                _outputDirectory = defaultLogs;
+            }
+            else
+            {
+                var docs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                _outputDirectory = Path.Combine(docs, "SimMetryx", "TelemetrySniff");
+            }
+
+            try
+            {
+                var file = GetSettingsFilePath();
+                if (File.Exists(file))
+                {
+                    var json = File.ReadAllText(file);
+                    var settings = JsonConvert.DeserializeObject<SniffSettings>(json);
+                    if (settings != null)
+                    {
+                        _isEnabled = settings.IsEnabled;
+                        if (!string.IsNullOrWhiteSpace(settings.OutputDirectory))
+                        {
+                            _outputDirectory = settings.OutputDirectory;
+                        }
+                        _targetHz = settings.TargetHz;
+                        _captureRawPayload = settings.CaptureRawPayload;
+                        _captureAllProperties = settings.CaptureAllProperties;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Fallback to defaults
+            }
+        }
+
+        public void SaveSettings()
+        {
+            try
+            {
+                var file = GetSettingsFilePath();
+                var dir = Path.GetDirectoryName(file);
+                if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                }
+
+                var settings = new SniffSettings
+                {
+                    IsEnabled = _isEnabled,
+                    OutputDirectory = _outputDirectory,
+                    TargetHz = _targetHz,
+                    CaptureRawPayload = _captureRawPayload,
+                    CaptureAllProperties = _captureAllProperties
+                };
+
+                File.WriteAllText(file, JsonConvert.SerializeObject(settings, Formatting.Indented));
+            }
+            catch (Exception)
+            {
+                // Settings save best effort
+            }
         }
 
         public void Dispose()

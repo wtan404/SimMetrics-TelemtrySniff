@@ -8,6 +8,7 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
     <SimHubDir Condition="'$(SimHubDir)' == '' and Exists('D:\Program Files\SimHub\SimHub.Plugins.dll')">D:\Program Files\SimHub</SimHubDir>
     <SimHubDir Condition="'$(SimHubDir)' == '' and Exists('C:\Program Files (x86)\SimHub\SimHub.Plugins.dll')">C:\Program Files (x86)\SimHub</SimHubDir>
