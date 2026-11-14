@@ -2,6 +2,18 @@
 
 All notable updates and project changes to `SimMetryx-TelemetrySniff` are documented in this file.
 
+## [1.1.0] - 2026-11-13 - Version Alignment & SimHub Production Deployment
+
+### Added
+- **Explicit Version Stamping**:
+  - Configured `<Version>1.1.0</Version>`, `<AssemblyVersion>1.1.0.0</AssemblyVersion>`, and `<FileVersion>1.1.0.0</FileVersion>` in `src/SimMetryx.TelemetrySniff.csproj`.
+  - Ensures Windows File Explorer and assembly inspection tools definitively distinguish production builds from default `1.0.0.0` templates.
+
+### Fixed
+- **SimHub Production Binary Overwrite**:
+  - Successfully deployed fresh `Release` build (48,128 bytes, v1.1.0.0) directly into `D:\Program Files\SimHub\simmetryxObserver.dll` and `SimMetryxObserver.dll` after resolving background host file locking.
+  - Verified active SimHub binary contains all UI updates (`BtnMasterPower`, 4-stage state badge, output folder browser) and sniffer pipeline enhancements (`CaptureManifest`, raw JSONL stream, property catalogs).
+
 ## [2026-11-13] - Complete Single-Assembly Consolidation & .NET 48 Standardization
 
 ### Removed

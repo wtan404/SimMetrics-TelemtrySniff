@@ -2,6 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
+    <Version>1.1.0</Version>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <FileVersion>1.1.0.0</FileVersion>
     <AssemblyName>SimMetryxObserver</AssemblyName>
     <RootNamespace>SimMetryx.TelemetrySniff</RootNamespace>
     <OutputType>Library</OutputType>
