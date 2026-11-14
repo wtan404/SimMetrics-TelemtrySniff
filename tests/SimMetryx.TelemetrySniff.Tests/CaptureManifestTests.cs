@@ -1,6 +1,6 @@
 using System;
 using Newtonsoft.Json;
-using SimMetryx.TelemetrySniff.Core.Models;
+using SimMetryx.TelemetrySniff.Models;
 using Xunit;
 
 namespace SimMetryx.TelemetrySniff.Tests

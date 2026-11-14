@@ -1,7 +1,7 @@
 using System;
 using Newtonsoft.Json;
 
-namespace SimMetryx.TelemetrySniff.Core.Models
+namespace SimMetryx.TelemetrySniff.Models
 {
     /// <summary>
     /// Developer & AI manifest recording technical metadata for a raw telemetry dump session.

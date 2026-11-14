@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using GameReaderCommon;
 using Newtonsoft.Json;
 using SimHub.Plugins;
-using SimMetryx.TelemetrySniff.Core.Models;
+using SimMetryx.TelemetrySniff.Models;
 
 namespace SimMetryx.TelemetrySniff
 {

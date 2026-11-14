@@ -10,13 +10,6 @@ Designed specifically as an automated reverse-engineering recorder and schema ex
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│              SimMetryx.TelemetrySniff.Core                  │
-│   • Universal TelemetryPacket & NormalizedData Channels     │
-│   • CaptureManifest Developer & AI Metadata Schema          │
-└──────────────────────────────┬──────────────────────────────┘
-                               │ (Zero-dependency embedded)
-                               ▼
-┌─────────────────────────────────────────────────────────────┐
 │          SimMetryxObserver.dll / simmetryxObserver.dll       │
 │                  (Universal SimHub Plugin)                  │
 ├─────────────────────────────────────────────────────────────┤
@@ -24,6 +17,7 @@ Designed specifically as an automated reverse-engineering recorder and schema ex
 │ • Simulator Process Bound Auto-Armed State Machine          │
 │ • High-Throughput Non-Blocking JSONL Telemetry Streamer     │
 │ • Runtime Reflection Schema Catalog Extractor               │
+│ • Universal TelemetryPacket & NormalizedData Channels       │
 │ • Technical AI & Developer Manifest Exporter                │
 └─────────────────────────────────────────────────────────────┘
 ```

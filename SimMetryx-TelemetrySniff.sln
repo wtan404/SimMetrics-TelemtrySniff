@@ -6,8 +6,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimMetryx.TelemetrySniff", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{073509EF-D890-4F0C-B34C-59033BF01E26}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimMetryx.TelemetrySniff.Core", "src\SimMetryx.TelemetrySniff.Core\SimMetryx.TelemetrySniff.Core.csproj", "{E1D9A19E-5317-4C32-A78F-117452DB9B29}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{A8D22AE0-1C73-41FD-9C28-D0E09B346B2E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimMetryx.TelemetrySniff.Tests", "tests\SimMetryx.TelemetrySniff.Tests\SimMetryx.TelemetrySniff.Tests.csproj", "{E2BC3DF8-F0D9-447A-9142-BBF7C2696FB2}"
@@ -22,10 +20,6 @@ Global
 		{B8A2B9F4-1E32-4720-B58A-9A2E8B1C3F9A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B8A2B9F4-1E32-4720-B58A-9A2E8B1C3F9A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B8A2B9F4-1E32-4720-B58A-9A2E8B1C3F9A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E1D9A19E-5317-4C32-A78F-117452DB9B29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E1D9A19E-5317-4C32-A78F-117452DB9B29}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E1D9A19E-5317-4C32-A78F-117452DB9B29}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E1D9A19E-5317-4C32-A78F-117452DB9B29}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E2BC3DF8-F0D9-447A-9142-BBF7C2696FB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E2BC3DF8-F0D9-447A-9142-BBF7C2696FB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E2BC3DF8-F0D9-447A-9142-BBF7C2696FB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -35,7 +29,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{E1D9A19E-5317-4C32-A78F-117452DB9B29} = {073509EF-D890-4F0C-B34C-59033BF01E26}
+		{B8A2B9F4-1E32-4720-B58A-9A2E8B1C3F9A} = {073509EF-D890-4F0C-B34C-59033BF01E26}
 		{E2BC3DF8-F0D9-447A-9142-BBF7C2696FB2} = {A8D22AE0-1C73-41FD-9C28-D0E09B346B2E}
 	EndGlobalSection
 EndGlobal

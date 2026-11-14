@@ -2,6 +2,26 @@
 
 All notable updates and project changes to `SimMetryx-TelemetrySniff` are documented in this file.
 
+## [2026-11-13] - Complete Single-Assembly Consolidation & .NET 48 Standardization
+
+### Removed
+- **Orphaned `Core` Project (`SimMetryx.TelemetrySniff.Core`)**:
+  - Removed obsolete `src/SimMetryx.TelemetrySniff.Core/SimMetryx.TelemetrySniff.Core.csproj` multi-targeting `net8.0;netstandard2.0`.
+  - Eliminated redundant `SimMetryx.TelemetrySniff.Core` project reference from `SimMetryx-TelemetrySniff.sln`.
+- **Physical Stale Build Caches**:
+  - Deep-purged all filesystem `bin/` and `obj/` directories containing legacy `net8.0-windows` and outdated `SimMetrics.*` compilation outputs.
+
+### Changed
+- **Direct Model Consolidation (`src/Models/`)**:
+  - Relocated `CaptureManifest.cs` and `TelemetryPacket.cs` directly into `src/Models/` within `SimMetryx.TelemetrySniff`.
+  - Updated namespaces to `SimMetryx.TelemetrySniff.Models` across the plugin engine and test suite.
+  - Streamlined `src/SimMetryx.TelemetrySniff.csproj` by removing artificial compile include/exclude workarounds.
+- **Test Suite Standardization on `net48`**:
+  - Retargeted `tests/SimMetryx.TelemetrySniff.Tests/SimMetryx.TelemetrySniff.Tests.csproj` to `net48` with `LangVersion=latest`, referencing the primary `SimMetryx.TelemetrySniff` project directly.
+  - All tests passing 100% on .NET Framework 4.8.
+- **Documentation & Architecture Diagram**:
+  - Updated `README.md` to reflect the clean single-assembly architecture without the dead Core layer.
+
 ## [2026-11-13] - Deprecation Cleanup & Single-Purpose Architecture Consolidation
 
 ### Removed
