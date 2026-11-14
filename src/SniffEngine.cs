@@ -9,8 +9,7 @@ using System.Threading.Tasks;
 using GameReaderCommon;
 using Newtonsoft.Json;
 using SimHub.Plugins;
-using SimMetryx.TelemetrySniff.Models;
-using CaptureManifest = SimMetryx.TelemetrySniff.Core.Models.CaptureManifest;
+using SimMetryx.TelemetrySniff.Core.Models;
 
 namespace SimMetryx.TelemetrySniff
 {
@@ -119,9 +118,6 @@ namespace SimMetryx.TelemetrySniff
         public string? LastCatalogFile { get; private set; }
         public string? LastManifestFile { get; private set; }
         public CaptureManifest? CurrentManifest { get; private set; }
-
-        // Backwards compatibility pointer
-        public string? LastSummaryMarkdownFile => LastManifestFile;
 
         public SniffEngine()
         {
@@ -297,15 +293,18 @@ namespace SimMetryx.TelemetrySniff
                 GameRunning = data.GameRunning,
                 GamePaused = data.GamePaused,
                 SessionType = data.NewData?.SessionTypeName ?? "Unknown",
-                CarModel = data.NewData.CarModel,
-                TrackCode = data.NewData.TrackCode
+                CarModel = data.NewData?.CarModel,
+                TrackCode = data.NewData?.TrackCode
             };
 
             // Extract Normalized Baseline
-            PopulateNormalizedData(packet.Normalized, data.NewData);
+            if (data.NewData != null)
+            {
+                PopulateNormalizedData(packet.Normalized, data.NewData);
+            }
 
             // Extract Game-Specific Raw Buffer if enabled
-            if (CaptureRawPayload)
+            if (CaptureRawPayload && data.NewData != null)
             {
                 try
                 {
@@ -330,9 +329,9 @@ namespace SimMetryx.TelemetrySniff
             }
 
             // Keep manifest session info up to date
-            if (CurrentManifest != null)
+            if (CurrentManifest != null && data.NewData != null)
             {
-                if (CurrentManifest.SessionType == "Unknown" && !string.IsNullOrEmpty(data.NewData?.SessionTypeName))
+                if (CurrentManifest.SessionType == "Unknown" && !string.IsNullOrEmpty(data.NewData.SessionTypeName))
                     CurrentManifest.SessionType = data.NewData.SessionTypeName;
 
                 if (CurrentManifest.Vehicle == "Unknown" && !string.IsNullOrEmpty(data.NewData.CarModel))

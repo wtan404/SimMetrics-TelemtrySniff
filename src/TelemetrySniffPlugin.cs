@@ -39,7 +39,6 @@ namespace SimMetryx.TelemetrySniff
             pluginManager.AddProperty("FramesCaptured", GetType(), 0L);
             pluginManager.AddProperty("DiscoveredPropertiesCount", GetType(), 0);
             pluginManager.AddProperty("CurrentSessionFile", GetType(), string.Empty);
-            pluginManager.AddProperty("LastSummaryFile", GetType(), string.Empty);
             pluginManager.AddProperty("LastManifestFile", GetType(), string.Empty);
             pluginManager.AddProperty("LastCatalogFile", GetType(), string.Empty);
             pluginManager.AddProperty("TargetHz", GetType(), Engine.TargetHz);
@@ -72,7 +71,7 @@ namespace SimMetryx.TelemetrySniff
 
             Engine.ProcessFrame(pluginManager, ref data);
 
-            var sessionType = !string.IsNullOrEmpty(data.NewData?.SessionTypeName) ? data.NewData.SessionTypeName : "Unknown";
+            var sessionType = data.NewData != null && !string.IsNullOrEmpty(data.NewData.SessionTypeName) ? data.NewData.SessionTypeName : "Unknown";
             var car = data.NewData != null && !string.IsNullOrEmpty(data.NewData.CarModel) ? data.NewData.CarModel : "Unknown Vehicle";
             var track = data.NewData != null && !string.IsNullOrEmpty(data.NewData.TrackCode) ? data.NewData.TrackCode : "Unknown Track";
 
@@ -114,7 +113,6 @@ namespace SimMetryx.TelemetrySniff
             pluginManager.SetPropertyValue("FramesCaptured", GetType(), Engine.FramesCaptured);
             pluginManager.SetPropertyValue("DiscoveredPropertiesCount", GetType(), Engine.DiscoveredPropertyCount);
             pluginManager.SetPropertyValue("CurrentSessionFile", GetType(), Engine.CurrentSessionFile ?? string.Empty);
-            pluginManager.SetPropertyValue("LastSummaryFile", GetType(), Engine.LastManifestFile ?? string.Empty);
             pluginManager.SetPropertyValue("LastManifestFile", GetType(), Engine.LastManifestFile ?? string.Empty);
             pluginManager.SetPropertyValue("LastCatalogFile", GetType(), Engine.LastCatalogFile ?? string.Empty);
             pluginManager.SetPropertyValue("TargetHz", GetType(), Engine.TargetHz);

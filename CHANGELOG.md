@@ -2,6 +2,37 @@
 
 All notable updates and project changes to `SimMetryx-TelemetrySniff` are documented in this file.
 
+## [2026-11-13] - Deprecation Cleanup & Single-Purpose Architecture Consolidation
+
+### Removed
+- **Standalone Assetto Corsa UDP Listener & CLI (`SimMetryx.TelemetrySniff.Cli`)**:
+  - Removed entire standalone command-line executable project (`src/SimMetryx.TelemetrySniff.Cli`).
+  - Removed direct AC UDP binary protocol models and parsers (`src/SimMetryx.TelemetrySniff.Core/AssettoCorsa/`: `AcModels.cs`, `AssettoCorsaUdpClient.cs`, `PassiveUdpSniffer.cs`).
+  - Removed standalone AC session writer (`src/SimMetryx.TelemetrySniff.Core/Storage/TelemetrySessionWriter.cs`).
+  - Removed standalone UDP handshake and physics tests (`tests/SimMetryx.TelemetrySniff.Tests/AssettoCorsaTests.cs`).
+  - Cleaned solution project definitions and build configurations in `SimMetryx-TelemetrySniff.sln`.
+- **Deprecated Post-Session Reporting Structures**:
+  - Removed dead `SessionSummary.cs` model (`src/SimMetryx.TelemetrySniff.Core/Models/SessionSummary.cs`).
+  - Removed deprecated `SessionSummaryTests.cs` test suite (`tests/SimMetryx.TelemetrySniff.Tests/SessionSummaryTests.cs`).
+  - Removed obsolete `LastSummaryMarkdownFile` alias from `SniffEngine.cs` and `LastSummaryFile` property registration from `TelemetrySniffPlugin.cs`.
+- **Duplicate & Legacy Telemetry Models**:
+  - Removed legacy duplicate `src/Models/TelemetryPacket.cs` and eliminated the orphaned `src/Models/` folder.
+- **Stale Build Artifacts**:
+  - Cleaned up obsolete `net8.0-windows` build output folders and legacy `SimMetrics.*` cached obj files.
+
+### Changed
+- **Unified Telemetry Data Model (`TelemetryPacket.cs`)**:
+  - Standardized all sniffer telemetry piping onto `SimMetryx.TelemetrySniff.Core.Models.TelemetryPacket`.
+  - Added `PressuresKpa` to `TyreData` alongside `PressuresPsi` to support universal wheel/tyre capture without data truncation.
+  - Reset default packet game name and running state to clean universal defaults (`string.Empty` and `false`).
+- **SniffEngine & Plugin Streamlining**:
+  - Refactored `SniffEngine.cs` to import `SimMetryx.TelemetrySniff.Core.Models` directly, eliminating type aliases and namespace fragmentation.
+  - Resolved all CS8602 nullable dereference warnings across `SniffEngine.cs`, `TelemetrySniffPlugin.cs`, and `SniffPluginUI.xaml.cs`.
+  - Updated `src/SimMetryx.TelemetrySniff.csproj` default item exclusions to reflect the removal of the CLI.
+- **Documentation & Test Suite**:
+  - Fully revised `README.md` to focus 100% on the Universal SimHub Telemetry Sniffer (`SimMetryx Observer`).
+  - Added round-trip serialization and channel verification tests for `TelemetryPacket` in `CaptureManifestTests.cs` (100% pass rate).
+
 ## [2026-11-12] - Operating Control Panel Master Toggle, Configurable Log Storage, and Simulator-State Raw Sniffer Engine
 
 ### Added

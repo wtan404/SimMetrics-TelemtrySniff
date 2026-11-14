@@ -14,13 +14,13 @@ namespace SimMetryx.TelemetrySniff.Core.Models
         public DateTime TimestampUtc { get; set; } = DateTime.UtcNow;
 
         [JsonProperty("gameName")]
-        public string GameName { get; set; } = "AssettoCorsa";
+        public string GameName { get; set; } = string.Empty;
 
         [JsonProperty("gameRunning")]
-        public bool GameRunning { get; set; } = true;
+        public bool GameRunning { get; set; }
 
         [JsonProperty("gamePaused")]
-        public bool GamePaused { get; set; } = false;
+        public bool GamePaused { get; set; }
 
         [JsonProperty("sessionType")]
         public string? SessionType { get; set; }
@@ -93,6 +93,7 @@ namespace SimMetryx.TelemetrySniff.Core.Models
     public class TyreData
     {
         public double[] TemperaturesC { get; set; } = new double[4];
+        public double[] PressuresKpa { get; set; } = new double[4];
         public double[] PressuresPsi { get; set; } = new double[4];
         public double[] WearPercent { get; set; } = new double[4];
         public double[] SlipAngle { get; set; } = new double[4];

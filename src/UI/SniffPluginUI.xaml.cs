@@ -198,13 +198,13 @@ namespace SimMetryx.TelemetrySniff.UI
             if (string.IsNullOrWhiteSpace(path)) return;
             try
             {
-                path = path.Trim();
-                if (!Directory.Exists(path))
+                var trimmed = path!.Trim();
+                if (!Directory.Exists(trimmed))
                 {
-                    Directory.CreateDirectory(path);
+                    Directory.CreateDirectory(trimmed);
                 }
-                _plugin.Engine.OutputDirectory = path;
-                TxtOutputDir.Text = path;
+                _plugin.Engine.OutputDirectory = trimmed;
+                TxtOutputDir.Text = trimmed;
             }
             catch (Exception ex)
             {

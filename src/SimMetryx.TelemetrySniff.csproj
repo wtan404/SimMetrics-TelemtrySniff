@@ -14,7 +14,7 @@
     <SimHubDir Condition="'$(SimHubDir)' == '' and Exists('C:\Program Files (x86)\SimHub\SimHub.Plugins.dll')">C:\Program Files (x86)\SimHub</SimHubDir>
     <SimHubDir Condition="'$(SimHubDir)' == ''">D:\Program Files\SimHub</SimHubDir>
     <DefineConstants Condition="Exists('$(SimHubDir)\SimHub.Plugins.dll')">$(DefineConstants);SIMHUB_REAL</DefineConstants>
-    <DefaultItemExcludes>$(DefaultItemExcludes);SimMetryx.TelemetrySniff.Core\**;SimMetryx.TelemetrySniff.Cli\**</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);SimMetryx.TelemetrySniff.Core\**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup Condition="Exists('$(SimHubDir)\SimHub.Plugins.dll')">
